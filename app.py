@@ -78,6 +78,17 @@ with btn_col1:
 with btn_col2:
     nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
 
+# --- Função segura para formatar preço ---
+def format_price(x):
+    try:
+        valor = str(x).replace(' ', '')       # remove espaços
+        valor = valor.replace('$','').replace('R$','')  # remove símbolos
+        valor = valor.replace('.', '')        # remove separador de milhar
+        valor = valor.replace(',', '.')       # converte vírgula decimal
+        return f"${float(valor):,.2f}"
+    except:
+        return ""
+
 # --- Ação Buscar ---
 if buscar:
     if codigos_input.strip() == "":
@@ -98,15 +109,8 @@ if buscar:
             # Converter para Pandas
             resultado_pd = resultado.to_pandas()
 
-            # Price com símbolo $ (tratamento seguro)
+            # Price com símbolo $ (seguro)
             if "Price" in resultado_pd.columns:
-                def format_price(x):
-                    try:
-                        # remove espaços e substitui vírgula decimal
-                        valor = str(x).replace(' ', '').replace(',', '.')
-                        return f"${float(valor):,.2f}"
-                    except:
-                        return ""
                 resultado_pd["Price"] = resultado_pd["Price"].apply(format_price)
 
             st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
