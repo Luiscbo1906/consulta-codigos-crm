@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- Estilo customizado tipo CRM ---
+# --- Estilo tipo CRM ---
 st.markdown("""
 <style>
 body {
@@ -44,7 +44,7 @@ with col2:
         logo = Image.open("logo.png")
         st.image(logo, width=180)
     except FileNotFoundError:
-        pass  # se não houver logo, ignora
+        pass  # ignora se não houver logo
 
 st.markdown("---")
 
@@ -62,12 +62,20 @@ if st.button("🔍 Buscar"):
     if codigos_input.strip() == "":
         st.warning("Digite ou cole pelo menos um Product ID.")
     else:
+        # Separar múltiplos IDs
         lista_codigos = re.split(r'[\s,;]+', codigos_input.strip())
         lista_codigos = [c.strip() for c in lista_codigos if c.strip() != ""]
 
+        # Filtrar com Polars
         resultado = df.filter(pl.col("Product ID").is_in(lista_codigos))
 
         if resultado.height > 0:
+            # Coluna "Product Description" em maiúsculo
+            if "Product Description" in resultado.columns:
+                resultado = resultado.with_column(
+                    pl.col("Product Description").str.to_uppercase()
+                )
+
             st.success(f"🔹 {resultado.height} registro(s) encontrado(s).")
             st.dataframe(resultado.to_pandas())
 
@@ -91,4 +99,3 @@ if st.button("🔍 Buscar"):
             )
         else:
             st.warning("Nenhum Product ID encontrado.")
-
