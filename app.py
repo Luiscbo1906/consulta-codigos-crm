@@ -53,7 +53,7 @@ df = pl.read_excel("dados.xlsx")
 
 # --- Campo de entrada ---
 codigos_input = st.text_area(
-    "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
+    "Digite ou cole os Product IDs:",
     placeholder="Ex: 12345, 67890"
 )
 
@@ -91,3 +91,4 @@ if st.button("🔍 Buscar"):
             )
         else:
             st.warning("Nenhum Product ID encontrado.")
+
