@@ -89,18 +89,27 @@ if buscar and input_area.strip():
                 lambda x: f"${x:,.2f}" if pd.notnull(x) else ""
             )
 
-        # 🔥 Seleciona apenas as colunas que você quer
+        # 🔥 Seleciona apenas as colunas desejadas
         colunas = ["ID", "Code", "Description", "Price"]
         resultado_final = resultado_pd[colunas]
 
         # --------------------------
-        # Mostrando com AgGrid SEM índice
+        # Configuração do AgGrid
         # --------------------------
         gb = GridOptionsBuilder.from_dataframe(resultado_final)
         gb.configure_default_column(resizable=True, filter=True, sortable=True)
+
+        # Ajustando largura manual
         gb.configure_column("ID", width=80)
+        gb.configure_column("Code", width=150)
+        gb.configure_column("Description", flex=1)  # ocupa espaço restante
+        gb.configure_column("Price", width=120, type=["numericColumn"], cellStyle={"textAlign": "right"})
+
         grid_options = gb.build()
 
+        # --------------------------
+        # Mostrando no app
+        # --------------------------
         AgGrid(
             resultado_final,
             gridOptions=grid_options,
