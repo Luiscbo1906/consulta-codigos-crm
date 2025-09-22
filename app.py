@@ -1,8 +1,8 @@
 import streamlit as st
-import pandas as pd
+import polars as pl
 from io import BytesIO
-import re
 from PIL import Image
+import re
 
 # --- Configurações da página ---
 st.set_page_config(
@@ -11,16 +11,37 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- Cabeçalho com logo maior e título centralizado ---
+# --- Estilo customizado tipo CRM ---
+st.markdown("""
+<style>
+body {
+    background-color: #f5f7fa;
+}
+.stButton>button {
+    background-color: #0A4C6A;
+    color: white;
+    font-weight: bold;
+    border-radius: 8px;
+    height: 40px;
+}
+.stTextArea>div>div>textarea {
+    border-radius: 5px;
+    border: 1px solid #0A4C6A;
+}
+.stDataFrame {
+    border: 1px solid #0A4C6A;
+    border-radius: 5px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# --- Cabeçalho com logo opcional e título ---
 try:
     logo = Image.open("logo.png")
     col1, col2 = st.columns([1, 5])
-    
     with col1:
-        st.image(logo, width=200)  # tamanho maior do logo
-    
+        st.image(logo, width=200)
     with col2:
-        # Título centralizado verticalmente
         st.markdown("""
             <div style="display: flex; align-items: center; height: 100%;">
                 <h1 style="color: #0A4C6A;">🔎 Consulta de Códigos CRM</h1>
@@ -29,15 +50,16 @@ try:
 except FileNotFoundError:
     st.markdown('<h1 style="color: #0A4C6A;">🔎 Consulta de Códigos CRM</h1>', unsafe_allow_html=True)
 
-st.markdown("---")  # linha horizontal
+st.markdown("---")
 
-# --- Ler Excel embutido ---
-df = pd.read_excel("dados.xlsx")
-# st.write("✅ Arquivo carregado automaticamente!")  # mensagem ocultada
+# --- Ler Excel embutido com Polars ---
+df = pl.read_excel("dados.xlsx")
+all_ids = df["Product ID"].to_list()  # para autocomplete
 
-# --- Campo de entrada ---
+# --- Campo de entrada com autocomplete ---
 codigos_input = st.text_area(
-    "Digite ou cole os Product IDs:"
+    "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
+    placeholder="Ex: 12345, 67890"
 )
 
 # --- Botão Buscar ---
@@ -45,32 +67,29 @@ if st.button("🔍 Buscar"):
     if codigos_input.strip() == "":
         st.warning("Digite ou cole pelo menos um Product ID.")
     else:
-        # Separadores múltiplos
+        # Separar múltiplos IDs
         lista_codigos = re.split(r'[\s,;]+', codigos_input.strip())
         lista_codigos = [c.strip() for c in lista_codigos if c.strip() != ""]
 
-        # Filtrar dados
-        df['Product ID'] = df['Product ID'].astype(str)
-        codigos_set = set(lista_codigos)
-        resultado = df[df['Product ID'].isin(codigos_set)]
+        # Filtrar com Polars
+        resultado = df.filter(pl.col("Product ID").is_in(lista_codigos))
 
-        if not resultado.empty:
-            st.success(f"🔹 {len(resultado)} registro(s) encontrado(s).")
-            st.dataframe(resultado)
+        if resultado.height > 0:
+            st.success(f"🔹 {resultado.height} registro(s) encontrado(s).")
+            st.dataframe(resultado.to_pandas())
 
             # --- Botão CSV ---
-            csv = resultado.to_csv(index=False).encode("utf-8")
+            csv_bytes = resultado.write_csv()
             st.download_button(
                 label="⬇️ Baixar resultado em CSV",
-                data=csv,
+                data=csv_bytes,
                 file_name="resultado.csv",
                 mime="text/csv",
             )
 
             # --- Botão Excel ---
             output = BytesIO()
-            with pd.ExcelWriter(output, engine="openpyxl") as writer:
-                resultado.to_excel(writer, index=False, sheet_name="Resultado")
+            resultado.to_pandas().to_excel(output, index=False, sheet_name="Resultado")
             st.download_button(
                 label="⬇️ Baixar resultado em Excel",
                 data=output.getvalue(),
@@ -79,4 +98,3 @@ if st.button("🔍 Buscar"):
             )
         else:
             st.warning("Nenhum Product ID encontrado.")
-
