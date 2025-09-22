@@ -106,11 +106,8 @@ if buscar:
 
             st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
 
-            # Resetar índice e ocultar índice do Pandas
-            resultado_pd = resultado_pd.reset_index(drop=True)
-
-            # Exibir DataFrame
-            st.dataframe(resultado_pd, use_container_width=True)
+            # Exibir tabela sem índice do Pandas
+            st.table(resultado_pd)  # st.table não mostra índice e ajusta colunas automaticamente
 
             # --- Botão CSV ---
             csv_bytes = resultado_pd.to_csv(index=False).encode("utf-8")
