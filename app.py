@@ -53,7 +53,7 @@ with col2:
 st.markdown("---")
 
 # --- Ler Excel com Pandas ---
-df = pd.read_excel("dados.xlsx", dtype=str)  # lê tudo como string
+df = pd.read_excel("dados.xlsx", dtype=str)
 
 # --- Função para Nova Pesquisa ---
 def limpar_input():
@@ -106,7 +106,10 @@ if buscar:
 
             st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
 
-            # Exibir DataFrame sem índice do Pandas
+            # Resetar índice e ocultar índice do Pandas
+            resultado_pd = resultado_pd.reset_index(drop=True)
+
+            # Exibir DataFrame
             st.dataframe(resultado_pd, use_container_width=True)
 
             # --- Botão CSV ---
