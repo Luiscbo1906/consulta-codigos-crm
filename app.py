@@ -37,7 +37,7 @@ df = pd.read_excel("dados.xlsx")
 
 # --- Campo de entrada ---
 codigos_input = st.text_area(
-    "Digite ou cole os Product IDs (de qualquer fonte, separados por vírgula, espaço ou tabulação):"
+    "Digite ou cole os Product IDs:"
 )
 
 # --- Botão Buscar ---
@@ -79,3 +79,4 @@ if st.button("🔍 Buscar"):
             )
         else:
             st.warning("Nenhum Product ID encontrado.")
+
