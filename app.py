@@ -23,8 +23,12 @@ except FileNotFoundError:
 @st.cache_data
 def carregar_dados(caminho="dados.xlsx"):
     df = pl.read_excel(caminho)
-    # Normalizar nomes das colunas (remover espaços extras)
-    df = df.rename({c: c.strip() for c in df.columns})
+    # Renomear as colunas para nomes consistentes
+    df = df.rename({
+        df.columns[0]: "Product_ID",
+        df.columns[1]: "Product_Description",
+        df.columns[2]: "Price"
+    })
     return df
 
 df = carregar_dados()
@@ -63,16 +67,16 @@ def manter_preco_com_dolar(x):
 # --- Busca ---
 if buscar and codigos_input.strip():
     codigos = [c.strip() for c in codigos_input.split("\n") if c.strip()]
-    resultado = df.filter(pl.col("Product ID").is_in(codigos))
+    resultado = df.filter(pl.col("Product_ID").is_in(codigos))
 
     if resultado.is_empty():
         st.warning("Nenhum código encontrado.")
     else:
-        # Selecionar apenas as 3 colunas da planilha
-        resultado = resultado.select(["Product ID", "Product Description", "Price"])
+        # Selecionar apenas as 3 colunas
+        resultado = resultado.select(["Product_ID", "Product_Description", "Price"])
 
         # Description em maiúsculo
-        resultado = resultado.with_column(pl.col("Product Description").str.to_uppercase())
+        resultado = resultado.with_column(pl.col("Product_Description").str.to_uppercase())
 
         # Price com $
         resultado = resultado.with_column(pl.col("Price").apply(manter_preco_com_dolar))
@@ -86,8 +90,8 @@ if buscar and codigos_input.strip():
         gb.configure_grid_options(domLayout='normal', hideIndex=True)
 
         # Ajustar largura das colunas
-        gb.configure_column("Product ID", width=150)
-        gb.configure_column("Product Description", width=350)
+        gb.configure_column("Product_ID", width=150)
+        gb.configure_column("Product_Description", width=350)
         gb.configure_column("Price", width=120)
 
         # Zebra alternada
