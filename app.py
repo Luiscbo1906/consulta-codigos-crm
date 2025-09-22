@@ -45,22 +45,23 @@ if buscar and codigos_input.strip():
     if resultado.is_empty():
         st.warning("Nenhum código encontrado.")
     else:
-        # Remover coluna ID se existir
+        # --- Remover coluna ID se existir ---
         if "ID" in resultado.columns:
             resultado = resultado.drop("ID")
 
-        # Colunas desejadas, incluindo a "fantasma"
-        colunas_exibir = []
-        # A primeira coluna do Excel que provavelmente é o índice
-        if resultado.columns[0] != "Product ID":
-            colunas_exibir.append(resultado.columns[0])  # coluna fantasma
-        colunas_exibir += ["Product ID", "Description", "Price"]
+        # --- Definir colunas para exibir ---
+        colunas_exibir = resultado.columns.copy()
 
-        resultado = resultado.select(colunas_exibir)
-
-        # Renomear coluna fantasma
+        # Se a primeira coluna não for Product ID, renomeia como Pos ID
         if colunas_exibir[0] != "Product ID":
             resultado = resultado.rename({colunas_exibir[0]: "Pos ID"})
+            # Reorganizar colunas
+            colunas_exibir = ["Pos ID", "Product ID", "Description", "Price"]
+            resultado = resultado.select(colunas_exibir)
+        else:
+            # Caso não tenha fantasma
+            colunas_exibir = ["Product ID", "Description", "Price"]
+            resultado = resultado.select(colunas_exibir)
 
         # Description em maiúsculo
         resultado = resultado.with_column(pl.col("Description").str.to_uppercase())
