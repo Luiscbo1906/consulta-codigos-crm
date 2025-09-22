@@ -105,7 +105,18 @@ if buscar and input_area.strip():
         gb.configure_column("Description", flex=1)  # ocupa espaço restante
         gb.configure_column("Price", width=120, type=["numericColumn"], cellStyle={"textAlign": "right"})
 
+        # 🔥 Estilo zebrado
         grid_options = gb.build()
+        grid_options["rowStyle"] = {"backgroundColor": "#f9f9f9"}
+        grid_options["getRowStyle"] = """
+            function(params) {
+                if (params.node.rowIndex % 2 === 0) {
+                    return { 'background-color': '#ffffff' };
+                } else {
+                    return { 'background-color': '#f2f2f2' };
+                }
+            }
+        """
 
         # --------------------------
         # Mostrando no app
