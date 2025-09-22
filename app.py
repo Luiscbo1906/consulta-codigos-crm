@@ -11,28 +11,23 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- Estilo CSS para cabeçalho profissional ---
-st.markdown("""
-<style>
-    .title {
-        font-size: 2rem;
-        font-weight: bold;
-        color: #0A4C6A;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# --- Cabeçalho com logo opcional ---
+# --- Cabeçalho com logo maior e título centralizado ---
 try:
     logo = Image.open("logo.png")
     col1, col2 = st.columns([1, 5])
+    
     with col1:
-        st.image(logo, width=200)
+        st.image(logo, width=200)  # tamanho maior do logo
+    
     with col2:
-        st.markdown('<div class="title">🔎 Consulta de Códigos CRM</div>', unsafe_allow_html=True)
+        # Título centralizado verticalmente
+        st.markdown("""
+            <div style="display: flex; align-items: center; height: 100%;">
+                <h1 style="color: #0A4C6A;">🔎 Consulta de Códigos CRM</h1>
+            </div>
+        """, unsafe_allow_html=True)
 except FileNotFoundError:
-    # Se não houver logo, mostra só o título
-    st.markdown('<div class="title">🔎 Consulta de Códigos CRM</div>', unsafe_allow_html=True)
+    st.markdown('<h1 style="color: #0A4C6A;">🔎 Consulta de Códigos CRM</h1>', unsafe_allow_html=True)
 
 st.markdown("---")  # linha horizontal
 
@@ -42,7 +37,7 @@ df = pd.read_excel("dados.xlsx")
 
 # --- Campo de entrada ---
 codigos_input = st.text_area(
-    "Digite ou cole os Product IDs:"
+    "Digite ou cole os Product IDs (de qualquer fonte, separados por vírgula, espaço ou tabulação):"
 )
 
 # --- Botão Buscar ---
@@ -84,6 +79,3 @@ if st.button("🔍 Buscar"):
             )
         else:
             st.warning("Nenhum Product ID encontrado.")
-
-
-
