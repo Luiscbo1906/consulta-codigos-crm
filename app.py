@@ -52,7 +52,7 @@ with col2:
 
 st.markdown("---")
 
-# --- Ler Excel com Pandas ---
+# --- Ler Excel ---
 df = pd.read_excel("dados.xlsx", dtype=str)
 
 # --- Função para Nova Pesquisa ---
@@ -93,8 +93,11 @@ if buscar:
         resultado_pd = df[df["Product ID"].isin(lista_codigos)].copy()
 
         if len(resultado_pd) > 0:
-            # Adicionar coluna ID sequencial no início
+            # Adicionar coluna ID sequencial
             resultado_pd.insert(0, "ID", range(1, len(resultado_pd)+1))
+
+            # Resetar índice antigo do Pandas
+            resultado_pd = resultado_pd.reset_index(drop=True)
 
             # Product Description em maiúsculo
             if "Product Description" in resultado_pd.columns:
@@ -106,8 +109,8 @@ if buscar:
 
             st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
 
-            # Exibir tabela sem índice do Pandas
-            st.table(resultado_pd)  # st.table não mostra índice e ajusta colunas automaticamente
+            # Exibir tabela sem índice
+            st.dataframe(resultado_pd, use_container_width=True)
 
             # --- Botão CSV ---
             csv_bytes = resultado_pd.to_csv(index=False).encode("utf-8")
