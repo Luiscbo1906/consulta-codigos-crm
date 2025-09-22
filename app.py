@@ -45,12 +45,16 @@ if buscar and codigos_input.strip():
     if resultado.is_empty():
         st.warning("Nenhum código encontrado.")
     else:
-        # --- Ajuste da primeira coluna como Pos ID ---
+        # --- Remover coluna ID caso exista ---
+        if "ID" in resultado.columns:
+            resultado = resultado.drop("ID")
+
+        # --- Primeiro coluna como Pos ID se não for Product ID ---
         cols = resultado.columns
         if cols[0] != "Product ID":
             resultado = resultado.rename({cols[0]: "Pos ID"})
 
-        # Selecionar somente colunas desejadas
+        # Selecionar apenas colunas desejadas
         colunas_exibir = [c for c in resultado.columns if c in ["Pos ID", "Product ID", "Description", "Price"]]
         resultado = resultado.select(colunas_exibir)
 
