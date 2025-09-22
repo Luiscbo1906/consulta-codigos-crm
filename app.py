@@ -79,12 +79,11 @@ with btn_col2:
     nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
 
 # --- Função para adicionar símbolo $ mantendo valor original ---
-def format_price(x):
+def format_price_safe(x):
     try:
-        x_float = float(x)
-        return f"${x_float:,.2f}"
+        return f"${float(x):,.2f}"
     except:
-        return ""
+        return ""  # deixa em branco se não for número
 
 # --- Ação Buscar ---
 if buscar:
@@ -106,10 +105,9 @@ if buscar:
             # Converter para Pandas
             resultado_pd = resultado.to_pandas()
 
-            # Converter coluna Price para float antes de formatar
+            # Price com símbolo $ mantendo valores originais
             if "Price" in resultado_pd.columns:
-                resultado_pd["Price"] = resultado_pd["Price"].astype(float)
-                resultado_pd["Price"] = resultado_pd["Price"].apply(format_price)
+                resultado_pd["Price"] = resultado_pd["Price"].apply(format_price_safe)
 
             st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
             st.dataframe(resultado_pd)
