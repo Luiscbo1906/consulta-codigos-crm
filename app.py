@@ -53,7 +53,7 @@ df = pl.read_excel("dados.xlsx")
 
 # --- Campo de entrada ---
 codigos_input = st.text_area(
-    "Digite ou cole os Product IDs:",
+    "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
     placeholder="Ex: 12345, 67890"
 )
 
@@ -72,9 +72,9 @@ if st.button("🔍 Buscar"):
         if resultado.height > 0:
             # Coluna "Product Description" em maiúsculo
             if "Product Description" in resultado.columns:
-                resultado = resultado.with_column(
-                    pl.col("Product Description").str.to_uppercase()
-                )
+                resultado = resultado.with_columns([
+                    pl.col("Product Description").str.to_uppercase().alias("Product Description")
+                ])
 
             st.success(f"🔹 {resultado.height} registro(s) encontrado(s).")
             st.dataframe(resultado.to_pandas())
