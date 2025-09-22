@@ -1,9 +1,7 @@
 import streamlit as st
 import polars as pl
-import re
 from st_aggrid import AgGrid, GridOptionsBuilder
 from io import BytesIO
-import pandas as pd
 
 st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
 
@@ -63,13 +61,28 @@ if buscar and codigos_input.strip():
         # converter para pandas para AgGrid
         resultado_pd = resultado.to_pandas()
 
-        # AgGrid com zebra e largura ajustada
+        # --- AgGrid com zebra forçada ---
         gb = GridOptionsBuilder.from_dataframe(resultado_pd)
         gb.configure_grid_options(domLayout='normal')
+
         gb.configure_column("ID", width=80)
         gb.configure_column("Product ID", width=150)
         gb.configure_column("Description", width=300)
         gb.configure_column("Price", width=120)
+
+        # CSS alternando linhas manualmente
+        gb.configure_grid_options(
+            getRowStyle="""
+            function(params) {
+                if (params.node.rowIndex % 2 === 0) {
+                    return {'background-color':'#f2f2f2'};
+                } else {
+                    return {'background-color':'white'};
+                }
+            }
+            """
+        )
+
         gridOptions = gb.build()
 
         AgGrid(
@@ -77,7 +90,6 @@ if buscar and codigos_input.strip():
             gridOptions=gridOptions,
             height=400,
             fit_columns_on_grid_load=True,
-            theme="alpine",  # tema com zebra
             allow_unsafe_jscode=True
         )
 
