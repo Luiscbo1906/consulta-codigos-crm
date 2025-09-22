@@ -76,7 +76,10 @@ if buscar and input_area.strip():
         # Ajusta dados
         resultado_pd = resultado.to_pandas()
 
-        # ID sequencial
+        # Remove colunas indesejadas (como Unnamed: 0, index, etc.)
+        resultado_pd = resultado_pd.loc[:, ~resultado_pd.columns.str.contains("^Unnamed")]
+
+        # Adiciona ID sequencial
         resultado_pd.insert(0, "ID", range(1, len(resultado_pd) + 1))
 
         # Descrição maiúscula
