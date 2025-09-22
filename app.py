@@ -34,17 +34,11 @@ body {
 .stTextArea>div>div>textarea {
     border-radius: 5px;
     border: 1px solid #0A4C6A;
-    height: 120px !important;  /* altura da caixa de input */
+    height: 120px !important;
 }
 .stDataFrame {
     border: 1px solid #0A4C6A;
     border-radius: 5px;
-}
-.button-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -69,27 +63,19 @@ df = pl.read_excel("dados.xlsx")
 def limpar_input():
     st.session_state["input_area"] = ""
 
-# --- Campo de input e botões alinhados verticalmente ---
-with st.container():
-    input_col, btn_col1, btn_col2 = st.columns([4,1,1])
-    
-    with input_col:
-        codigos_input = st.text_area(
-            "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
-            placeholder="Ex: 12345, 67890",
-            key="input_area",
-        )
-    
-    # Botões centralizados verticalmente
-    with btn_col1:
-        st.markdown("<div class='button-container'>", unsafe_allow_html=True)
-        buscar = st.button("🔍 Buscar")
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-    with btn_col2:
-        st.markdown("<div class='button-container'>", unsafe_allow_html=True)
-        nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
-        st.markdown("</div>", unsafe_allow_html=True)
+# --- Campo de input ---
+codigos_input = st.text_area(
+    "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
+    placeholder="Ex: 12345, 67890",
+    key="input_area",
+)
+
+# --- Botões em linha abaixo do input ---
+col1_btn, col2_btn, _ = st.columns([1,1,8])
+with col1_btn:
+    buscar = st.button("🔍 Buscar")
+with col2_btn:
+    nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
 
 # --- Ação Buscar ---
 if buscar:
@@ -114,7 +100,7 @@ if buscar:
             # Price com símbolo $
             if "Price" in resultado_pd.columns:
                 resultado_pd["Price"] = resultado_pd["Price"].apply(
-                    lambda x: f"${float(x):,.2f}" if pd.notnull(x) and str(x).replace('.','',1).isdigit() else ""
+                    lambda x: f"${float(x):,.2f}" if pd.notnull(x) and str(x).replace('.','',1).replace(',','').isdigit() else ""
                 )
 
             st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
