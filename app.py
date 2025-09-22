@@ -2,8 +2,22 @@ import streamlit as st
 import polars as pl
 from st_aggrid import AgGrid, GridOptionsBuilder
 from io import BytesIO
+from PIL import Image
 
+# --- Configuração da página ---
 st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
+
+# --- Cabeçalho com título e logo ---
+logo_path = "logo.png"  # substitua pelo caminho correto do logo no repositório
+try:
+    logo = Image.open(logo_path)
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        st.markdown("## 🔍 Consulta de Códigos CRM")
+    with col2:
+        st.image(logo, width=180)
+except FileNotFoundError:
+    st.markdown("## 🔍 Consulta de Códigos CRM")  # fallback se não achar o logo
 
 # --- Carregar Excel ---
 @st.cache_data
