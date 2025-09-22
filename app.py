@@ -30,7 +30,7 @@ body {
     border-radius: 8px;
     height: 40px;
     min-width: 140px;
-    white-space: nowrap;  /* evita quebra de linha */
+    white-space: nowrap;
 }
 .stTextArea>div>div>textarea {
     border-radius: 5px;
@@ -78,10 +78,11 @@ with btn_col1:
 with btn_col2:
     nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
 
-# --- Função para adicionar símbolo $ mantendo valor da planilha ---
-def format_price_american(x):
+# --- Função para adicionar símbolo $ mantendo valor original ---
+def format_price(x):
     try:
-        return f"${x:,.2f}" if pd.notnull(x) else ""
+        x_float = float(x)
+        return f"${x_float:,.2f}"
     except:
         return ""
 
@@ -105,9 +106,10 @@ if buscar:
             # Converter para Pandas
             resultado_pd = resultado.to_pandas()
 
-            # Price com símbolo $ mantendo formato americano
+            # Converter coluna Price para float antes de formatar
             if "Price" in resultado_pd.columns:
-                resultado_pd["Price"] = resultado_pd["Price"].apply(format_price_american)
+                resultado_pd["Price"] = resultado_pd["Price"].astype(float)
+                resultado_pd["Price"] = resultado_pd["Price"].apply(format_price)
 
             st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
             st.dataframe(resultado_pd)
