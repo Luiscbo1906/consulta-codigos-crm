@@ -35,17 +35,17 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-# --- Cabeçalho com logo centralizado verticalmente junto com o título ---
+# --- Cabeçalho centralizado verticalmente ---
 try:
     logo = Image.open("logo.png")
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1, 3, 1])
     with col2:
-        # Cria um layout horizontal com logo e título centralizados
-        cols = st.columns([1, 3])
-        with cols[0]:
-            st.image(logo, width=180)
-        with cols[1]:
-            st.markdown('<h1 style="color:#0A4C6A; margin:0; line-height:1.2;">🔎 Consulta de Códigos CRM</h1>', unsafe_allow_html=True)
+        st.markdown(f"""
+            <div style="display:flex; align-items:center; justify-content:center; gap:20px;">
+                <img src="logo.png" width="180" style="display:block;"/>
+                <h1 style="color:#0A4C6A; margin:0;">🔎 Consulta de Códigos CRM</h1>
+            </div>
+        """, unsafe_allow_html=True)
 except FileNotFoundError:
     st.markdown('<h1 style="color:#0A4C6A; text-align:center;">🔎 Consulta de Códigos CRM</h1>', unsafe_allow_html=True)
 
@@ -54,9 +54,9 @@ st.markdown("---")
 # --- Ler Excel com Polars ---
 df = pl.read_excel("dados.xlsx")
 
-# --- Campo de entrada normal (textarea) ---
+# --- Campo de entrada ---
 codigos_input = st.text_area(
-    "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
+    "Digite ou cole os Product IDs:",
     placeholder="Ex: 12345, 67890"
 )
 
@@ -65,18 +65,15 @@ if st.button("🔍 Buscar"):
     if codigos_input.strip() == "":
         st.warning("Digite ou cole pelo menos um Product ID.")
     else:
-        # Separar múltiplos IDs
         lista_codigos = re.split(r'[\s,;]+', codigos_input.strip())
         lista_codigos = [c.strip() for c in lista_codigos if c.strip() != ""]
 
-        # Filtrar com Polars
         resultado = df.filter(pl.col("Product ID").is_in(lista_codigos))
 
         if resultado.height > 0:
             st.success(f"🔹 {resultado.height} registro(s) encontrado(s).")
             st.dataframe(resultado.to_pandas())
 
-            # --- Botão CSV ---
             csv_bytes = resultado.write_csv()
             st.download_button(
                 label="⬇️ Baixar resultado em CSV",
@@ -85,7 +82,6 @@ if st.button("🔍 Buscar"):
                 mime="text/csv",
             )
 
-            # --- Botão Excel ---
             output = BytesIO()
             resultado.to_pandas().to_excel(output, index=False, sheet_name="Resultado")
             st.download_button(
