@@ -2,7 +2,6 @@ import streamlit as st
 import polars as pl
 from io import BytesIO
 from PIL import Image
-import re
 
 # --- Configurações da página ---
 st.set_page_config(
@@ -23,10 +22,6 @@ body {
     font-weight: bold;
     border-radius: 8px;
     height: 40px;
-}
-.stTextArea>div>div>textarea {
-    border-radius: 5px;
-    border: 1px solid #0A4C6A;
 }
 .stDataFrame {
     border: 1px solid #0A4C6A;
@@ -52,26 +47,24 @@ except FileNotFoundError:
 
 st.markdown("---")
 
-# --- Ler Excel embutido com Polars ---
+# --- Ler Excel com Polars ---
 df = pl.read_excel("dados.xlsx")
+all_ids = df["Product ID"].to_list()
 
-# --- Campo de entrada ---
-codigos_input = st.text_area(
-    "Digite ou cole os Product IDs:",
-    placeholder="Ex: 12345, 67890"
+# --- Campo de entrada com autocomplete múltiplo ---
+selected_ids = st.multiselect(
+    "Digite ou selecione os Product IDs:",
+    options=all_ids,
+    help="Você pode digitar ou selecionar múltiplos IDs"
 )
 
 # --- Botão Buscar ---
 if st.button("🔍 Buscar"):
-    if codigos_input.strip() == "":
-        st.warning("Digite ou cole pelo menos um Product ID.")
+    if not selected_ids:
+        st.warning("Selecione ou digite pelo menos um Product ID.")
     else:
-        # Separar múltiplos IDs
-        lista_codigos = re.split(r'[\s,;]+', codigos_input.strip())
-        lista_codigos = [c.strip() for c in lista_codigos if c.strip() != ""]
-
         # Filtrar com Polars
-        resultado = df.filter(pl.col("Product ID").is_in(lista_codigos))
+        resultado = df.filter(pl.col("Product ID").is_in(selected_ids))
 
         if resultado.height > 0:
             st.success(f"🔹 {resultado.height} registro(s) encontrado(s).")
