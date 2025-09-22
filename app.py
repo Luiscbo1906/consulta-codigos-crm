@@ -21,8 +21,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- Cabeçalho com título ---
-st.markdown('<div class="title">Consulta de Códigos CRM</div>', unsafe_allow_html=True)
+# --- Cabeçalho com título e lupa ---
+st.markdown('<div class="title">🔎 Consulta de Códigos CRM</div>', unsafe_allow_html=True)
 st.markdown("---")  # linha horizontal
 
 # --- Ler Excel embutido ---
@@ -31,7 +31,7 @@ df = pd.read_excel("dados.xlsx")
 
 # --- Campo de entrada ---
 codigos_input = st.text_area(
-    "Digite ou cole os Product IDs (de qualquer fonte, separados por vírgula, espaço ou tabulação):"
+    "Digite ou cole os Product IDs:"
 )
 
 # --- Botão Buscar ---
