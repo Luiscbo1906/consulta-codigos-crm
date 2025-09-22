@@ -29,7 +29,8 @@ def carregar_dados(caminho="dados.xlsx"):
         df.columns[1]: "Product_Description",
         df.columns[2]: "Price"
     })
-    return df
+    # Garantir que seja DataFrame, não LazyFrame
+    return pl.DataFrame(df)
 
 df = carregar_dados()
 
@@ -75,13 +76,11 @@ if buscar and codigos_input.strip():
         # Selecionar apenas as 3 colunas
         resultado = resultado.select(["Product_ID", "Product_Description", "Price"])
 
-        # Description em maiúsculo com cast seguro
-        resultado = resultado.with_column(
-            pl.col("Product_Description").cast(pl.Utf8).str.to_uppercase()
-        )
-
-        # Price com $
-        resultado = resultado.with_column(pl.col("Price").apply(manter_preco_com_dolar))
+        # Converter para strings e colocar Description em maiúsculo
+        resultado = resultado.with_columns([
+            pl.col("Product_Description").cast(pl.Utf8).str.to_uppercase(),
+            pl.col("Price").apply(manter_preco_com_dolar)
+        ])
 
         # Converter para pandas e resetar índice
         resultado_pd = resultado.to_pandas()
