@@ -34,16 +34,16 @@ body {
 .stTextArea>div>div>textarea {
     border-radius: 5px;
     border: 1px solid #0A4C6A;
-    height: 80px !important;
+    height: 120px !important;  /* altura maior da caixa de input */
 }
 .stDataFrame {
     border: 1px solid #0A4C6A;
     border-radius: 5px;
 }
-.vertical-center {
+.button-container {
     display: flex;
     align-items: center;
-    height: 100%;
+    height: 120px;  /* mesma altura da caixa de input */
 }
 </style>
 """, unsafe_allow_html=True)
@@ -68,7 +68,7 @@ df = pl.read_excel("dados.xlsx")
 def limpar_input():
     st.session_state["input_area"] = ""
 
-# --- Campo de input e botões alinhados verticalmente ---
+# --- Input e botões alinhados verticalmente ---
 with st.container():
     input_col, btn_col1, btn_col2 = st.columns([4,1,1])
     
@@ -80,12 +80,12 @@ with st.container():
         )
     
     with btn_col1:
-        st.markdown("<div class='vertical-center'>", unsafe_allow_html=True)
+        st.markdown("<div class='button-container'>", unsafe_allow_html=True)
         buscar = st.button("🔍 Buscar")
         st.markdown("</div>", unsafe_allow_html=True)
         
     with btn_col2:
-        st.markdown("<div class='vertical-center'>", unsafe_allow_html=True)
+        st.markdown("<div class='button-container'>", unsafe_allow_html=True)
         nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
         st.markdown("</div>", unsafe_allow_html=True)
 
