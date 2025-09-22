@@ -2,3 +2,4 @@ streamlit
 polars
 openpyxl
 pillow
+fastexcel
