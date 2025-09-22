@@ -75,8 +75,10 @@ if buscar and codigos_input.strip():
         # Selecionar apenas as 3 colunas
         resultado = resultado.select(["Product_ID", "Product_Description", "Price"])
 
-        # Description em maiúsculo
-        resultado = resultado.with_column(pl.col("Product_Description").str.to_uppercase())
+        # Description em maiúsculo com cast seguro
+        resultado = resultado.with_column(
+            pl.col("Product_Description").cast(pl.Utf8).str.to_uppercase()
+        )
 
         # Price com $
         resultado = resultado.with_column(pl.col("Price").apply(manter_preco_com_dolar))
