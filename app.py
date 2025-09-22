@@ -45,12 +45,22 @@ if buscar and codigos_input.strip():
     if resultado.is_empty():
         st.warning("Nenhum código encontrado.")
     else:
-        # criar ID sequencial
-        resultado = resultado.with_column(pl.Series("ID", range(1, resultado.height+1)))
+        # Remover coluna ID se existir
+        if "ID" in resultado.columns:
+            resultado = resultado.drop("ID")
 
-        # colunas desejadas
-        colunas_exibir = ["ID", "Product ID", "Description", "Price"]
+        # Colunas desejadas, incluindo a "fantasma"
+        colunas_exibir = []
+        # A primeira coluna do Excel que provavelmente é o índice
+        if resultado.columns[0] != "Product ID":
+            colunas_exibir.append(resultado.columns[0])  # coluna fantasma
+        colunas_exibir += ["Product ID", "Description", "Price"]
+
         resultado = resultado.select(colunas_exibir)
+
+        # Renomear coluna fantasma
+        if colunas_exibir[0] != "Product ID":
+            resultado = resultado.rename({colunas_exibir[0]: "Pos ID"})
 
         # Description em maiúsculo
         resultado = resultado.with_column(pl.col("Description").str.to_uppercase())
@@ -58,19 +68,25 @@ if buscar and codigos_input.strip():
         # Price com $
         resultado = resultado.with_column(pl.col("Price").apply(manter_preco_com_dolar))
 
-        # converter para pandas para AgGrid
+        # Converter para pandas para AgGrid
         resultado_pd = resultado.to_pandas()
 
         # --- AgGrid com zebra forçada ---
         gb = GridOptionsBuilder.from_dataframe(resultado_pd)
         gb.configure_grid_options(domLayout='normal')
 
-        gb.configure_column("ID", width=80)
-        gb.configure_column("Product ID", width=150)
-        gb.configure_column("Description", width=300)
-        gb.configure_column("Price", width=120)
+        # Ajustar largura das colunas
+        for col in resultado_pd.columns:
+            if col == "Pos ID":
+                gb.configure_column(col, width=80)
+            elif col == "Product ID":
+                gb.configure_column(col, width=150)
+            elif col == "Description":
+                gb.configure_column(col, width=300)
+            elif col == "Price":
+                gb.configure_column(col, width=120)
 
-        # CSS alternando linhas manualmente
+        # Zebra alternada
         gb.configure_grid_options(
             getRowStyle="""
             function(params) {
