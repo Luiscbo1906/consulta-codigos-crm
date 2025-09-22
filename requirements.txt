@@ -3,3 +3,4 @@ polars
 streamlit-aggrid
 pandas
 openpyxl
+fastexcel
