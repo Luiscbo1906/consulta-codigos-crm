@@ -54,11 +54,10 @@ st.markdown("---")
 
 # --- Ler Excel embutido com Polars ---
 df = pl.read_excel("dados.xlsx")
-all_ids = df["Product ID"].to_list()  # para autocomplete
 
-# --- Campo de entrada com autocomplete ---
+# --- Campo de entrada ---
 codigos_input = st.text_area(
-    "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
+    "Digite ou cole os Product IDs:",
     placeholder="Ex: 12345, 67890"
 )
 
