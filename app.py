@@ -1,7 +1,9 @@
 import streamlit as st
 import polars as pl
+import re
 from st_aggrid import AgGrid, GridOptionsBuilder
 from io import BytesIO
+import pandas as pd
 
 st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
 
@@ -45,17 +47,11 @@ if buscar and codigos_input.strip():
     if resultado.is_empty():
         st.warning("Nenhum código encontrado.")
     else:
-        # --- Remover coluna ID caso exista ---
-        if "ID" in resultado.columns:
-            resultado = resultado.drop("ID")
+        # criar ID sequencial
+        resultado = resultado.with_column(pl.Series("ID", range(1, resultado.height+1)))
 
-        # --- Primeiro coluna como Pos ID se não for Product ID ---
-        cols = resultado.columns
-        if cols[0] != "Product ID":
-            resultado = resultado.rename({cols[0]: "Pos ID"})
-
-        # Selecionar apenas colunas desejadas
-        colunas_exibir = [c for c in resultado.columns if c in ["Pos ID", "Product ID", "Description", "Price"]]
+        # colunas desejadas
+        colunas_exibir = ["ID", "Product ID", "Description", "Price"]
         resultado = resultado.select(colunas_exibir)
 
         # Description em maiúsculo
@@ -64,38 +60,16 @@ if buscar and codigos_input.strip():
         # Price com $
         resultado = resultado.with_column(pl.col("Price").apply(manter_preco_com_dolar))
 
-        # Converter para pandas
+        # converter para pandas para AgGrid
         resultado_pd = resultado.to_pandas()
-        resultado_pd.reset_index(drop=True, inplace=True)  # remove índice fantasma
 
-        # --- AgGrid ---
+        # AgGrid com zebra e largura ajustada
         gb = GridOptionsBuilder.from_dataframe(resultado_pd)
         gb.configure_grid_options(domLayout='normal')
-
-        # Ajustar largura das colunas
-        for col in resultado_pd.columns:
-            if col == "Pos ID":
-                gb.configure_column(col, width=80, header_name="Pos ID")
-            elif col == "Product ID":
-                gb.configure_column(col, width=150)
-            elif col == "Description":
-                gb.configure_column(col, width=300)
-            elif col == "Price":
-                gb.configure_column(col, width=120)
-
-        # Zebra alternada
-        gb.configure_grid_options(
-            getRowStyle="""
-            function(params) {
-                if (params.node.rowIndex % 2 === 0) {
-                    return {'background-color':'#f2f2f2'};
-                } else {
-                    return {'background-color':'white'};
-                }
-            }
-            """
-        )
-
+        gb.configure_column("ID", width=80)
+        gb.configure_column("Product ID", width=150)
+        gb.configure_column("Description", width=300)
+        gb.configure_column("Price", width=120)
         gridOptions = gb.build()
 
         AgGrid(
@@ -103,6 +77,7 @@ if buscar and codigos_input.strip():
             gridOptions=gridOptions,
             height=400,
             fit_columns_on_grid_load=True,
+            theme="alpine",  # tema com zebra
             allow_unsafe_jscode=True
         )
 
