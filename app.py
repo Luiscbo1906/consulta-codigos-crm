@@ -1,136 +1,106 @@
 import streamlit as st
+import polars as pl
 import pandas as pd
-from io import BytesIO
-from PIL import Image
-import re
+from st_aggrid import AgGrid, GridOptionsBuilder
 
-# --- Configurações da página ---
-st.set_page_config(
-    page_title="Consulta de Códigos CRM",
-    page_icon="📊",
-    layout="wide"
+# --------------------------
+# Configuração da página
+# --------------------------
+st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
+
+# CSS para alinhar os botões
+st.markdown(
+    """
+    <style>
+    div.stButton > button {
+        height: 60px;
+        margin-top: 12px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
 )
 
-# --- Inicializar session_state ---
-if "input_area" not in st.session_state:
-    st.session_state["input_area"] = ""
-
-# --- Estilo profissional ---
-st.markdown("""
-<style>
-body {
-    background-color: #f5f7fa;
-    font-family: Arial, sans-serif;
-}
-.stButton>button {
-    background-color: #0A4C6A;
-    color: white;
-    font-weight: bold;
-    border-radius: 8px;
-    height: 40px;
-    min-width: 140px;
-    white-space: nowrap;
-}
-.stTextArea>div>div>textarea {
-    border-radius: 5px;
-    border: 1px solid #0A4C6A;
-    height: 120px !important;
-    font-size: 16px;
-    padding: 10px;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# --- Cabeçalho com logo ---
-col1, col2 = st.columns([5,1])
+# --------------------------
+# Logo + Título
+# --------------------------
+col1, col2 = st.columns([6, 1])
 with col1:
-    st.markdown('<h1 style="color:#0A4C6A; margin:0;">🔎 Consulta de Códigos CRM</h1>', unsafe_allow_html=True)
+    st.markdown("### 🔍 Consulta de Códigos CRM")
 with col2:
-    try:
-        logo = Image.open("logo.png")
-        st.image(logo, width=180)
-    except FileNotFoundError:
-        pass
+    st.image("logo.png", width=120)
 
-st.markdown("---")
+# --------------------------
+# Entrada de códigos
+# --------------------------
+col_input, col_b1, col_b2 = st.columns([4, 1, 1])
 
-# --- Ler Excel ---
-df = pd.read_excel("dados.xlsx", dtype=str)
+with col_input:
+    input_area = st.text_area(
+        "Digite os códigos (separados por vírgula ou quebra de linha):",
+        key="input_area",
+        height=100
+    )
 
-# --- Função Nova Pesquisa ---
-def limpar_input():
-    st.session_state["input_area"] = ""
+with col_b1:
+    buscar = st.button("🔎 Buscar", use_container_width=True)
 
-# --- Campo de input ---
-codigos_input = st.text_area(
-    "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
-    placeholder="Ex: 12345, 67890",
-    key="input_area",
-)
+with col_b2:
+    nova_pesquisa = st.button("🗑️ Nova Pesquisa", use_container_width=True)
+    if nova_pesquisa:
+        st.session_state.input_area = ""
+        st.rerun()
 
-# --- Botões lado a lado alinhados ao centro da caixa ---
-col_btn1, col_btn2, _ = st.columns([1,1,8])
-with col_btn1:
-    buscar = st.button("🔍 Buscar")
-with col_btn2:
-    nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
+# --------------------------
+# Carregamento dos dados
+# --------------------------
+@st.cache_data
+def carregar_dados():
+    return pl.read_excel("dados.xlsx")
 
-# --- Função para adicionar $ mantendo valor original ---
-def add_dolar(x):
-    if x and x.strip() != "":
-        return f"${x.strip()}"
+df = carregar_dados()
+
+# --------------------------
+# Processamento da busca
+# --------------------------
+if buscar and input_area.strip():
+    # Normaliza entrada
+    codigos = [c.strip() for c in input_area.replace("\n", ",").split(",") if c.strip()]
+
+    # Filtra dados
+    resultado = df.filter(pl.col("Code").is_in(codigos))
+
+    if resultado.is_empty():
+        st.warning("Nenhum código encontrado.")
     else:
-        return ""
+        # Ajusta dados
+        resultado_pd = resultado.to_pandas()
 
-# --- Ação Buscar ---
-if buscar:
-    if codigos_input.strip() == "":
-        st.warning("Digite ou cole pelo menos um Product ID.")
-    else:
-        # separar os códigos por vírgula, espaço ou tab
-        lista_codigos = re.split(r'[\s,;]+', codigos_input.strip())
-        lista_codigos = [c.strip() for c in lista_codigos if c.strip() != ""]
+        # ID sequencial
+        resultado_pd.insert(0, "ID", range(1, len(resultado_pd) + 1))
 
-        # Filtrar na planilha
-        resultado_pd = df[df["Product ID"].isin(lista_codigos)].copy()
+        # Descrição maiúscula
+        if "Description" in resultado_pd.columns:
+            resultado_pd["Description"] = resultado_pd["Description"].str.upper()
 
-        if len(resultado_pd) > 0:
-            # Resetar índice antigo do Pandas para remover “coluna fantasma”
-            resultado_pd.reset_index(drop=True, inplace=True)
-
-            # Adicionar coluna ID sequencial
-            resultado_pd.insert(0, "ID", range(1, len(resultado_pd)+1))
-
-            # Product Description em maiúsculo
-            if "Product Description" in resultado_pd.columns:
-                resultado_pd["Product Description"] = resultado_pd["Product Description"].str.upper()
-
-            # Price com $
-            if "Price" in resultado_pd.columns:
-                resultado_pd["Price"] = resultado_pd["Price"].apply(add_dolar)
-
-            st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
-
-            # Exibir tabela sem índice
-            st.table(resultado_pd)
-
-            # --- Botão CSV ---
-            csv_bytes = resultado_pd.to_csv(index=False).encode("utf-8")
-            st.download_button(
-                label="⬇️ Baixar resultado em CSV",
-                data=csv_bytes,
-                file_name="resultado.csv",
-                mime="text/csv",
+        # Preço com $
+        if "Price" in resultado_pd.columns:
+            resultado_pd["Price"] = resultado_pd["Price"].apply(
+                lambda x: f"${x:,.2f}" if pd.notnull(x) else ""
             )
 
-            # --- Botão Excel ---
-            output = BytesIO()
-            resultado_pd.to_excel(output, index=False, sheet_name="Resultado")
-            st.download_button(
-                label="⬇️ Baixar resultado em Excel",
-                data=output.getvalue(),
-                file_name="resultado.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-        else:
-            st.warning("Nenhum Product ID encontrado.")
+        # --------------------------
+        # Mostrando com AgGrid
+        # --------------------------
+        gb = GridOptionsBuilder.from_dataframe(resultado_pd)
+        gb.configure_default_column(resizable=True, filter=True, sortable=True)
+        gb.configure_column("ID", width=80)
+        grid_options = gb.build()
+
+        AgGrid(
+            resultado_pd,
+            gridOptions=grid_options,
+            fit_columns_on_grid_load=True,
+            height=400,
+            enable_enterprise_modules=False,
+        )
