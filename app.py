@@ -49,17 +49,27 @@ with col2:
 
 st.markdown("---")
 
-# --- Ler Excel com Polars ---
-df = pl.read_excel("dados.xlsx")
+# --- Ler arquivo otimizado para grandes volumes ---
+# Recomenda-se converter seu Excel grande para Parquet: dados.parquet
+df = pl.read_parquet("dados.parquet")  # muito mais rápido que Excel
 
 # --- Campo de entrada ---
 codigos_input = st.text_area(
-    "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
-    placeholder="Ex: 12345, 67890"
+    "Digite ou cole os Product IDs:",
+    placeholder="Ex: 12345, 67890",
+    key="input_area"
 )
 
-# --- Botão Buscar ---
-if st.button("🔍 Buscar"):
+# --- Botões Buscar e Nova Pesquisa ---
+col_btn1, col_btn2 = st.columns([1,1])
+buscar = col_btn1.button("🔍 Buscar")
+nova_pesquisa = col_btn2.button("🆕 Nova Pesquisa")
+
+if nova_pesquisa:
+    st.session_state["input_area"] = ""
+    st.experimental_rerun()
+
+if buscar:
     if codigos_input.strip() == "":
         st.warning("Digite ou cole pelo menos um Product ID.")
     else:
@@ -69,16 +79,16 @@ if st.button("🔍 Buscar"):
         resultado = df.filter(pl.col("Product ID").is_in(lista_codigos))
 
         if resultado.height > 0:
-            # Coluna "Product Description" em maiúsculo
+            # Product Description em maiúsculo
             if "Product Description" in resultado.columns:
                 resultado = resultado.with_columns([
                     pl.col("Product Description").str.to_uppercase().alias("Product Description")
                 ])
 
-            # Converter para Pandas antes de exibir / exportar
+            # Converter para Pandas
             resultado_pd = resultado.to_pandas()
 
-            # Coluna Price com símbolo de dólar (tratando valores não numéricos)
+            # Price com símbolo $
             if "Price" in resultado_pd.columns:
                 resultado_pd["Price"] = resultado_pd["Price"].apply(
                     lambda x: f"${float(x):,.2f}" if pd.notnull(x) and str(x).replace('.','',1).isdigit() else ""
