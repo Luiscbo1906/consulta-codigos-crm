@@ -45,23 +45,13 @@ if buscar and codigos_input.strip():
     if resultado.is_empty():
         st.warning("Nenhum código encontrado.")
     else:
-        # --- Remover coluna ID se existir ---
-        if "ID" in resultado.columns:
-            resultado = resultado.drop("ID")
-
-        # --- Definir colunas para exibir ---
-        colunas_exibir = resultado.columns.copy()
-
-        # Se a primeira coluna não for Product ID, renomeia como Pos ID
-        if colunas_exibir[0] != "Product ID":
-            resultado = resultado.rename({colunas_exibir[0]: "Pos ID"})
-            # Reorganizar colunas
-            colunas_exibir = ["Pos ID", "Product ID", "Description", "Price"]
-            resultado = resultado.select(colunas_exibir)
-        else:
-            # Caso não tenha fantasma
-            colunas_exibir = ["Product ID", "Description", "Price"]
-            resultado = resultado.select(colunas_exibir)
+        # --- Primeiro coluna como Pos ID se não for Product ID ---
+        cols = resultado.columns
+        if cols[0] != "Product ID":
+            resultado = resultado.rename({cols[0]: "Pos ID"})
+        # Selecionar apenas as colunas desejadas
+        colunas_exibir = [c for c in resultado.columns if c in ["Pos ID", "Product ID", "Description", "Price"]]
+        resultado = resultado.select(colunas_exibir)
 
         # Description em maiúsculo
         resultado = resultado.with_column(pl.col("Description").str.to_uppercase())
@@ -69,17 +59,18 @@ if buscar and codigos_input.strip():
         # Price com $
         resultado = resultado.with_column(pl.col("Price").apply(manter_preco_com_dolar))
 
-        # Converter para pandas para AgGrid
+        # Converter para pandas
         resultado_pd = resultado.to_pandas()
+        resultado_pd.reset_index(drop=True, inplace=True)  # remove índice fantasma do pandas
 
-        # --- AgGrid com zebra forçada ---
+        # --- AgGrid ---
         gb = GridOptionsBuilder.from_dataframe(resultado_pd)
         gb.configure_grid_options(domLayout='normal')
 
         # Ajustar largura das colunas
         for col in resultado_pd.columns:
             if col == "Pos ID":
-                gb.configure_column(col, width=80)
+                gb.configure_column(col, width=80, header_name="Pos ID")
             elif col == "Product ID":
                 gb.configure_column(col, width=150)
             elif col == "Description":
