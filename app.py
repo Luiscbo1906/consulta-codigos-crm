@@ -35,20 +35,19 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-# --- Cabeçalho com logo opcional e título ---
+# --- Cabeçalho com logo centralizado verticalmente junto com o título ---
 try:
     logo = Image.open("logo.png")
-    col1, col2 = st.columns([1, 5])
-    with col1:
-        st.image(logo, width=180)
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.markdown("""
-            <div style="display: flex; align-items: center; height: 100%;">
-                <h1 style="color: #0A4C6A;">🔎 Consulta de Códigos CRM</h1>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                <img src="logo.png" width="180" style="display: block;"/>
+                <h1 style="color: #0A4C6A; margin:0;">🔎 Consulta de Códigos CRM</h1>
             </div>
         """, unsafe_allow_html=True)
 except FileNotFoundError:
-    st.markdown('<h1 style="color: #0A4C6A;">🔎 Consulta de Códigos CRM</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 style="color: #0A4C6A; text-align:center;">🔎 Consulta de Códigos CRM</h1>', unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -57,7 +56,7 @@ df = pl.read_excel("dados.xlsx")
 
 # --- Campo de entrada normal (textarea) ---
 codigos_input = st.text_area(
-    "Digite ou cole os Product IDs:",
+    "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
     placeholder="Ex: 12345, 67890"
 )
 
@@ -97,4 +96,3 @@ if st.button("🔍 Buscar"):
             )
         else:
             st.warning("Nenhum Product ID encontrado.")
-
