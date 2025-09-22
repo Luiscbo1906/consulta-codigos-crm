@@ -78,14 +78,10 @@ with btn_col1:
 with btn_col2:
     nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
 
-# --- Função segura para formatar preço ---
-def format_price(x):
+# --- Função para adicionar símbolo $ mantendo valor da planilha ---
+def format_price_american(x):
     try:
-        valor = str(x).replace(' ', '')       # remove espaços
-        valor = valor.replace('$','').replace('R$','')  # remove símbolos
-        valor = valor.replace('.', '')        # remove separador de milhar
-        valor = valor.replace(',', '.')       # converte vírgula decimal
-        return f"${float(valor):,.2f}"
+        return f"${x:,.2f}" if pd.notnull(x) else ""
     except:
         return ""
 
@@ -109,9 +105,9 @@ if buscar:
             # Converter para Pandas
             resultado_pd = resultado.to_pandas()
 
-            # Price com símbolo $ (seguro)
+            # Price com símbolo $ mantendo formato americano
             if "Price" in resultado_pd.columns:
-                resultado_pd["Price"] = resultado_pd["Price"].apply(format_price)
+                resultado_pd["Price"] = resultado_pd["Price"].apply(format_price_american)
 
             st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
             st.dataframe(resultado_pd)
