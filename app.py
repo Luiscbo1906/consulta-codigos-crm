@@ -1,5 +1,4 @@
 import streamlit as st
-import polars as pl
 import pandas as pd
 from io import BytesIO
 from PIL import Image
@@ -57,8 +56,8 @@ with col2:
 
 st.markdown("---")
 
-# --- Ler Excel ---
-df = pl.read_excel("dados.xlsx")
+# --- Ler Excel com Pandas ---
+df = pd.read_excel("dados.xlsx")
 
 # --- Função para Nova Pesquisa ---
 def limpar_input():
@@ -78,16 +77,12 @@ with btn_col1:
 with btn_col2:
     nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
 
-# --- Função segura para preço ---
-def format_price_excel(x):
+# --- Função para formatar preço com $ ---
+def format_price_safe(x):
     try:
-        # converte para string, remove espaços e símbolos invisíveis
-        x_str = str(x).replace(" ", "").replace("$","")
-        # tenta converter para float
-        valor = float(x_str)
-        return f"${valor:,.2f}"
+        return f"${float(x):,.2f}"
     except:
-        return ""  # deixa vazio se não conseguir converter
+        return ""
 
 # --- Ação Buscar ---
 if buscar:
@@ -97,21 +92,16 @@ if buscar:
         lista_codigos = re.split(r'[\s,;]+', codigos_input.strip())
         lista_codigos = [c.strip() for c in lista_codigos if c.strip() != ""]
 
-        resultado = df.filter(pl.col("Product ID").is_in(lista_codigos))
+        resultado_pd = df[df["Product ID"].isin(lista_codigos)].copy()
 
-        if resultado.height > 0:
+        if len(resultado_pd) > 0:
             # Product Description em maiúsculo
-            if "Product Description" in resultado.columns:
-                resultado = resultado.with_columns([
-                    pl.col("Product Description").str.to_uppercase().alias("Product Description")
-                ])
+            if "Product Description" in resultado_pd.columns:
+                resultado_pd["Product Description"] = resultado_pd["Product Description"].str.upper()
 
-            # Converter para Pandas
-            resultado_pd = resultado.to_pandas()
-
-            # Preço com símbolo $ mantendo valores originais
+            # Price com $
             if "Price" in resultado_pd.columns:
-                resultado_pd["Price"] = resultado_pd["Price"].apply(format_price_excel)
+                resultado_pd["Price"] = resultado_pd["Price"].apply(format_price_safe)
 
             st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
             st.dataframe(resultado_pd)
