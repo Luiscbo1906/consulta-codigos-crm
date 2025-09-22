@@ -34,7 +34,7 @@ body {
 .stTextArea>div>div>textarea {
     border-radius: 5px;
     border: 1px solid #0A4C6A;
-    height: 120px !important;  /* altura maior da caixa de input */
+    height: 120px !important;  /* altura da caixa de input */
 }
 .stDataFrame {
     border: 1px solid #0A4C6A;
@@ -43,7 +43,8 @@ body {
 .button-container {
     display: flex;
     align-items: center;
-    height: 120px;  /* mesma altura da caixa de input */
+    justify-content: center;
+    height: 100%;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -68,7 +69,7 @@ df = pl.read_excel("dados.xlsx")
 def limpar_input():
     st.session_state["input_area"] = ""
 
-# --- Input e botões alinhados verticalmente ---
+# --- Campo de input e botões alinhados verticalmente ---
 with st.container():
     input_col, btn_col1, btn_col2 = st.columns([4,1,1])
     
@@ -79,6 +80,7 @@ with st.container():
             key="input_area",
         )
     
+    # Botões centralizados verticalmente
     with btn_col1:
         st.markdown("<div class='button-container'>", unsafe_allow_html=True)
         buscar = st.button("🔍 Buscar")
