@@ -59,23 +59,24 @@ df = pl.read_excel("dados.xlsx")
 
 # --- Campo de entrada ---
 codigos_input = st.text_area(
-    "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
+    "Digite ou cole os Product IDs:",
     placeholder="Ex: 12345, 67890",
     key="input_area",
     height=100
 )
+
+# --- Função para Nova Pesquisa ---
+def limpar_input():
+    st.session_state["input_area"] = ""
 
 # --- Botões lado a lado ---
 col_btn1, col_btn2 = st.columns([1,1])
 with col_btn1:
     buscar = st.button("🔍 Buscar")
 with col_btn2:
-    nova_pesquisa = st.button("🆕 Nova Pesquisa")
+    nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
 
-if nova_pesquisa:
-    st.session_state["input_area"] = ""
-    st.experimental_rerun()
-
+# --- Ação Buscar ---
 if buscar:
     if codigos_input.strip() == "":
         st.warning("Digite ou cole pelo menos um Product ID.")
