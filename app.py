@@ -27,7 +27,7 @@ try:
     logo = Image.open("logo.png")
     col1, col2 = st.columns([1, 5])
     with col1:
-        st.image(logo, width=150)
+        st.image(logo, width=220)
     with col2:
         st.markdown('<div class="title">🔎 Consulta de Códigos CRM</div>', unsafe_allow_html=True)
 except FileNotFoundError:
@@ -84,4 +84,5 @@ if st.button("🔍 Buscar"):
             )
         else:
             st.warning("Nenhum Product ID encontrado.")
+
 
