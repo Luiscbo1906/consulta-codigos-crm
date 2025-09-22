@@ -95,11 +95,11 @@ if buscar:
         resultado_pd = df[df["Product ID"].isin(lista_codigos)].copy()
 
         if len(resultado_pd) > 0:
+            # Resetar índice antigo do Pandas para remover “coluna fantasma”
+            resultado_pd.reset_index(drop=True, inplace=True)
+
             # Adicionar coluna ID sequencial
             resultado_pd.insert(0, "ID", range(1, len(resultado_pd)+1))
-
-            # Resetar índice antigo do Pandas
-            resultado_pd.reset_index(drop=True, inplace=True)
 
             # Product Description em maiúsculo
             if "Product Description" in resultado_pd.columns:
@@ -111,11 +111,8 @@ if buscar:
 
             st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
 
-            # Converter para lista de dicionários para ocultar índice
-            dados_exibir = resultado_pd.to_dict(orient="records")
-
             # Exibir tabela sem índice
-            st.table(dados_exibir)
+            st.table(resultado_pd)
 
             # --- Botão CSV ---
             csv_bytes = resultado_pd.to_csv(index=False).encode("utf-8")
