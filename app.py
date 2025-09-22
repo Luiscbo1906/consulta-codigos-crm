@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🔎 Consulta de Códigos - tipo PROCV (rápido)")
+st.title("🔎 Consulta de Códigos CRM")
 
 # --- Ler o Excel embutido ---
 df = pd.read_excel("dados.xlsx")
@@ -61,3 +61,4 @@ if st.button("🔍 Buscar"):
             )
         else:
             st.warning("Nenhum Product ID encontrado.")
+
