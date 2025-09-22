@@ -29,7 +29,8 @@ body {
     font-weight: bold;
     border-radius: 8px;
     height: 40px;
-    min-width: 120px;
+    min-width: 140px;
+    white-space: nowrap;  /* evita quebra de linha */
 }
 .stTextArea>div>div>textarea {
     border-radius: 5px;
@@ -70,11 +71,11 @@ codigos_input = st.text_area(
     key="input_area",
 )
 
-# --- Botões em linha abaixo do input ---
-col1_btn, col2_btn, _ = st.columns([1,1,8])
-with col1_btn:
+# --- Botões lado a lado ---
+btn_col1, btn_col2, _ = st.columns([1,1,8])
+with btn_col1:
     buscar = st.button("🔍 Buscar")
-with col2_btn:
+with btn_col2:
     nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
 
 # --- Ação Buscar ---
