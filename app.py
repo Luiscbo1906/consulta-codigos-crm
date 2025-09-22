@@ -76,10 +76,7 @@ if buscar and input_area.strip():
         # Ajusta dados
         resultado_pd = resultado.to_pandas()
 
-        # Remove colunas indesejadas (como Unnamed: 0, index, etc.)
-        resultado_pd = resultado_pd.loc[:, ~resultado_pd.columns.str.contains("^Unnamed")]
-
-        # Adiciona ID sequencial
+        # Cria ID sequencial
         resultado_pd.insert(0, "ID", range(1, len(resultado_pd) + 1))
 
         # Descrição maiúscula
@@ -92,18 +89,23 @@ if buscar and input_area.strip():
                 lambda x: f"${x:,.2f}" if pd.notnull(x) else ""
             )
 
+        # 🔥 Seleciona apenas as colunas que você quer
+        colunas = ["ID", "Code", "Description", "Price"]
+        resultado_final = resultado_pd[colunas]
+
         # --------------------------
-        # Mostrando com AgGrid
+        # Mostrando com AgGrid SEM índice
         # --------------------------
-        gb = GridOptionsBuilder.from_dataframe(resultado_pd)
+        gb = GridOptionsBuilder.from_dataframe(resultado_final)
         gb.configure_default_column(resizable=True, filter=True, sortable=True)
         gb.configure_column("ID", width=80)
         grid_options = gb.build()
 
         AgGrid(
-            resultado_pd,
+            resultado_final,
             gridOptions=grid_options,
             fit_columns_on_grid_load=True,
             height=400,
             enable_enterprise_modules=False,
+            show_index=False,  # garante que não mostra índice extra
         )
