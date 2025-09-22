@@ -40,7 +40,7 @@ try:
     logo = Image.open("logo.png")
     col1, col2 = st.columns([1, 5])
     with col1:
-        st.image(logo, width=200)
+        st.image(logo, width=180)
     with col2:
         st.markdown("""
             <div style="display: flex; align-items: center; height: 100%;">
@@ -97,3 +97,4 @@ if st.button("🔍 Buscar"):
             )
         else:
             st.warning("Nenhum Product ID encontrado.")
+
