@@ -54,13 +54,13 @@ df = pl.read_excel("dados.xlsx")
 
 # --- Campo de entrada ---
 codigos_input = st.text_area(
-    "Digite ou cole os Product IDs:",
+    "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
     placeholder="Ex: 12345, 67890",
     key="input_area"
 )
 
-# --- Botões Buscar e Nova Pesquisa ---
-col_btn1, col_btn2 = st.columns([1,1])
+# --- Botões Buscar e Nova Pesquisa lado a lado com espaçamento menor ---
+col_btn1, col_btn2, col_btn3 = st.columns([1,1,8])  # col_btn3 serve só para empurrar os botões à esquerda
 buscar = col_btn1.button("🔍 Buscar")
 nova_pesquisa = col_btn2.button("🆕 Nova Pesquisa")
 
