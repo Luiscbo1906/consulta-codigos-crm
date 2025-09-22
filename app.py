@@ -17,7 +17,7 @@ try:
     with col2:
         st.image(logo, width=180)
 except FileNotFoundError:
-    st.markdown("## 🔍 Consulta de Códigos CRM")  # fallback se não achar o logo
+    st.markdown("## 🔍 Consulta de Códigos CRM")
 
 # --- Carregar Excel ---
 @st.cache_data
@@ -28,17 +28,17 @@ def carregar_dados(caminho="dados.xlsx"):
         df.columns[1]: "Product_Description",
         df.columns[2]: "Price"
     })
-    return pl.DataFrame(df)
+    return df
 
 df = carregar_dados()
 
 # --- Input de códigos ---
 if "input_area" not in st.session_state:
-    st.session_state["input_area"] = ""
+    st.session_state.input_area = ""
 
 codigos_input = st.text_area(
     "Digite os códigos (um por linha):",
-    value=st.session_state["input_area"],
+    value=st.session_state.input_area,
     height=150
 )
 
@@ -54,11 +54,9 @@ with col2:
 
 # --- Função para manter preço com $
 def manter_preco_com_dolar(x):
-    if x is None:
+    if x is None or str(x).strip() == "":
         return ""
     s = str(x).strip()
-    if s == "" or s.lower() in ["nan", "none", "na", "n/a"]:
-        return ""
     if s.startswith("$"):
         return s
     return f"${s}"
@@ -74,14 +72,16 @@ if buscar and codigos_input.strip():
         # Selecionar apenas as 3 colunas
         resultado = resultado.select(["Product_ID", "Product_Description", "Price"])
 
-        # Converter Description para maiúsculo
-        resultado = resultado.with_columns([
-            pl.col("Product_Description").cast(pl.Utf8).str.to_uppercase(),
-            pl.col("Price").cast(pl.Utf8).apply(manter_preco_com_dolar)
-        ])
-
-        # Converter para pandas e resetar índice
+        # Converter para pandas
         resultado_pd = resultado.to_pandas()
+
+        # Description em maiúsculo
+        resultado_pd["Product_Description"] = resultado_pd["Product_Description"].astype(str).str.upper()
+
+        # Price com $
+        resultado_pd["Price"] = resultado_pd["Price"].apply(manter_preco_com_dolar)
+
+        # Resetar índice
         resultado_pd.reset_index(drop=True, inplace=True)
 
         # --- AgGrid ---
