@@ -35,11 +35,13 @@ body {
     border-radius: 5px;
     border: 1px solid #0A4C6A;
     height: 120px !important;
+    font-size: 16px;
+    padding: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# --- Cabeçalho ---
+# --- Cabeçalho com logo ---
 col1, col2 = st.columns([5,1])
 with col1:
     st.markdown('<h1 style="color:#0A4C6A; margin:0;">🔎 Consulta de Códigos CRM</h1>', unsafe_allow_html=True)
@@ -55,7 +57,7 @@ st.markdown("---")
 # --- Ler Excel ---
 df = pd.read_excel("dados.xlsx", dtype=str)
 
-# --- Função para Nova Pesquisa ---
+# --- Função Nova Pesquisa ---
 def limpar_input():
     st.session_state["input_area"] = ""
 
@@ -66,11 +68,11 @@ codigos_input = st.text_area(
     key="input_area",
 )
 
-# --- Botões lado a lado ---
-btn_col1, btn_col2, _ = st.columns([1,1,8])
-with btn_col1:
+# --- Botões lado a lado alinhados ao centro da caixa ---
+col_btn1, col_btn2, _ = st.columns([1,1,8])
+with col_btn1:
     buscar = st.button("🔍 Buscar")
-with btn_col2:
+with col_btn2:
     nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
 
 # --- Função para adicionar $ mantendo valor original ---
