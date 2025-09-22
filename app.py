@@ -40,14 +40,14 @@ try:
     logo = Image.open("logo.png")
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown("""
-            <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                <img src="logo.png" width="180" style="display: block;"/>
-                <h1 style="color: #0A4C6A; margin:0;">🔎 Consulta de Códigos CRM</h1>
-            </div>
-        """, unsafe_allow_html=True)
+        # Cria um layout horizontal com logo e título centralizados
+        cols = st.columns([1, 3])
+        with cols[0]:
+            st.image(logo, width=180)
+        with cols[1]:
+            st.markdown('<h1 style="color:#0A4C6A; margin:0; line-height:1.2;">🔎 Consulta de Códigos CRM</h1>', unsafe_allow_html=True)
 except FileNotFoundError:
-    st.markdown('<h1 style="color: #0A4C6A; text-align:center;">🔎 Consulta de Códigos CRM</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 style="color:#0A4C6A; text-align:center;">🔎 Consulta de Códigos CRM</h1>', unsafe_allow_html=True)
 
 st.markdown("---")
 
