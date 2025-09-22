@@ -98,11 +98,16 @@ if buscar:
             # Converter para Pandas
             resultado_pd = resultado.to_pandas()
 
-            # Price com símbolo $
+            # Price com símbolo $ (tratamento seguro)
             if "Price" in resultado_pd.columns:
-                resultado_pd["Price"] = resultado_pd["Price"].apply(
-                    lambda x: f"${float(x):,.2f}" if pd.notnull(x) and str(x).replace('.','',1).replace(',','').isdigit() else ""
-                )
+                def format_price(x):
+                    try:
+                        # remove espaços e substitui vírgula decimal
+                        valor = str(x).replace(' ', '').replace(',', '.')
+                        return f"${float(valor):,.2f}"
+                    except:
+                        return ""
+                resultado_pd["Price"] = resultado_pd["Price"].apply(format_price)
 
             st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
             st.dataframe(resultado_pd)
