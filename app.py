@@ -42,14 +42,8 @@ codigos_input = st.text_area(
     height=150
 )
 
-# Botões lado a lado
-col1, col2 = st.columns([1, 1])
-buscar = col1.button("🔍 Buscar")
-nova = col2.button("🧹 Nova pesquisa")
-
-if nova:
-    st.session_state.input_area = ""
-    st.experimental_rerun()  # reinicia a página sem erro
+# --- Botão Buscar ---
+buscar = st.button("🔍 Buscar")
 
 # --- Função para manter preço com $
 def manter_preco_com_dolar(x):
