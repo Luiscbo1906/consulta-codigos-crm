@@ -1,72 +1,91 @@
 import streamlit as st
 import polars as pl
+import re
+from st_aggrid import AgGrid, GridOptionsBuilder
+from io import BytesIO
+import pandas as pd
 
-# ========================================
-# Carregar Excel com Polars (muito mais rápido que Pandas)
-# ========================================
+st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
+
+# --- carregar Excel ---
 @st.cache_data
-def carregar_dados(caminho):
+def carregar_dados(caminho="dados.xlsx"):
     return pl.read_excel(caminho)
 
-df = carregar_dados("dados.xlsx")
+df = carregar_dados()
 
-# ========================================
-# Layout da tela
-# ========================================
-st.title("Consulta de Códigos CRM")
+# --- Input de códigos ---
+if "input_area" not in st.session_state:
+    st.session_state["input_area"] = ""
 
-# Caixa de input
-codigos_input = st.text_area("Digite os códigos (um por linha):", height=150, key="input_area")
+codigos_input = st.text_area("Digite os códigos (um por linha):", value=st.session_state["input_area"], height=150)
 
-# Colunas para os botões
-col1, col2 = st.columns([1, 1])
-
+col1, col2 = st.columns([1,1])
 with col1:
     buscar = st.button("🔍 Buscar")
 with col2:
-    nova_pesquisa = st.button("🧹 Nova pesquisa")
+    if st.button("🧹 Nova pesquisa"):
+        st.session_state.input_area = ""
+        st.experimental_rerun()
 
-# Resetar pesquisa
-if nova_pesquisa:
-    st.session_state.input_area = ""
-    st.rerun()
+# --- Função para manter preço igual Excel com $ ---
+def manter_preco_com_dolar(x):
+    if x is None: return ""
+    s = str(x).strip()
+    if s == "" or s.lower() in ["nan", "none", "na", "n/a"]:
+        return ""
+    if s.startswith("$"):
+        return s
+    return f"${s}"
 
-# ========================================
-# Lógica de busca
-# ========================================
+# --- Busca ---
 if buscar and codigos_input.strip():
-    # Lista de PNs digitados
     codigos = [c.strip() for c in codigos_input.split("\n") if c.strip()]
 
-    # Filtrar no Polars
     resultado = df.filter(pl.col("Product ID").is_in(codigos))
 
-    if not resultado.is_empty():
-        # Selecionar apenas as colunas desejadas
-        resultado = resultado.select([
-            pl.Series("ID", range(1, len(resultado) + 1)),
-            pl.col("Product ID"),
-            pl.col("Description"),
-            pl.col("Price")
-        ])
+    if resultado.is_empty():
+        st.warning("Nenhum código encontrado.")
+    else:
+        # criar ID sequencial
+        resultado = resultado.with_column(pl.Series("ID", range(1, resultado.height+1)))
 
-        # Converter para pandas apenas para exibir no Streamlit
+        # colunas desejadas
+        colunas_exibir = ["ID", "Product ID", "Description", "Price"]
+        resultado = resultado.select(colunas_exibir)
+
+        # Description em maiúsculo
+        resultado = resultado.with_column(pl.col("Description").str.to_uppercase())
+
+        # Price com $
+        resultado = resultado.with_column(pl.col("Price").apply(manter_preco_com_dolar))
+
+        # converter para pandas para AgGrid
         resultado_pd = resultado.to_pandas()
 
-        # Estilo: cores alternadas + largura ajustada
-        styled = (
-            resultado_pd.style
-            .hide(axis="index")  # oculta índice fantasma
-            .set_table_styles([
-                {"selector": "th.col0", "props": "width: 50px;"},
-                {"selector": "th.col1", "props": "width: 150px;"},
-                {"selector": "th.col2", "props": "width: 300px;"},
-                {"selector": "th.col3", "props": "width: 120px;"},
-            ])
-            .apply(lambda x: ['background-color: #f9f9f9' if i % 2 == 0 else '' 
-                              for i in range(len(x))], axis=0)
+        # AgGrid com zebra e largura ajustada
+        gb = GridOptionsBuilder.from_dataframe(resultado_pd)
+        gb.configure_grid_options(domLayout='normal')
+        gb.configure_column("ID", width=80)
+        gb.configure_column("Product ID", width=150)
+        gb.configure_column("Description", width=300)
+        gb.configure_column("Price", width=120)
+        gridOptions = gb.build()
+
+        AgGrid(
+            resultado_pd,
+            gridOptions=gridOptions,
+            height=400,
+            fit_columns_on_grid_load=True,
+            theme="alpine",  # tema com zebra
+            allow_unsafe_jscode=True
         )
 
-        st.dataframe(styled, use_container_width=True)
-    else:
-        st.warning("Nenhum código encontrado.")
+        # --- Downloads ---
+        csv_bytes = resultado_pd.to_csv(index=False).encode("utf-8")
+        st.download_button("⬇️ CSV", csv_bytes, "resultado.csv", mime="text/csv")
+
+        xlsx = BytesIO()
+        resultado_pd.to_excel(xlsx, index=False, sheet_name="Resultado")
+        st.download_button("⬇️ Excel", xlsx.getvalue(), "resultado.xlsx",
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
