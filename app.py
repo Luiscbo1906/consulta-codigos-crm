@@ -1,5 +1,6 @@
 import streamlit as st
 import polars as pl
+import pandas as pd
 from io import BytesIO
 from PIL import Image
 import re
@@ -11,7 +12,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- Estilo customizado tipo CRM ---
+# --- Estilo tipo CRM ---
 st.markdown("""
 <style>
 body {
@@ -35,27 +36,23 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-# --- Cabeçalho com logo opcional e título ---
-try:
-    logo = Image.open("logo.png")
-    col1, col2 = st.columns([1, 5])
-    with col1:
-        st.image(logo, width=200)
-    with col2:
-        st.markdown("""
-            <div style="display: flex; align-items: center; height: 100%;">
-                <h1 style="color: #0A4C6A;">🔎 Consulta de Códigos CRM</h1>
-            </div>
-        """, unsafe_allow_html=True)
-except FileNotFoundError:
-    st.markdown('<h1 style="color: #0A4C6A;">🔎 Consulta de Códigos CRM</h1>', unsafe_allow_html=True)
+# --- Cabeçalho: título à esquerda e logo à direita ---
+col1, col2 = st.columns([5, 1])
+with col1:
+    st.markdown('<h1 style="color:#0A4C6A; margin:0;">🔎 Consulta de Códigos CRM</h1>', unsafe_allow_html=True)
+with col2:
+    try:
+        logo = Image.open("logo.png")
+        st.image(logo, width=180)
+    except FileNotFoundError:
+        pass
 
 st.markdown("---")
 
 # --- Ler Excel com Polars ---
 df = pl.read_excel("dados.xlsx")
 
-# --- Campo de entrada normal (textarea) ---
+# --- Campo de entrada ---
 codigos_input = st.text_area(
     "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
     placeholder="Ex: 12345, 67890"
@@ -66,19 +63,32 @@ if st.button("🔍 Buscar"):
     if codigos_input.strip() == "":
         st.warning("Digite ou cole pelo menos um Product ID.")
     else:
-        # Separar múltiplos IDs
         lista_codigos = re.split(r'[\s,;]+', codigos_input.strip())
         lista_codigos = [c.strip() for c in lista_codigos if c.strip() != ""]
 
-        # Filtrar com Polars
         resultado = df.filter(pl.col("Product ID").is_in(lista_codigos))
 
         if resultado.height > 0:
-            st.success(f"🔹 {resultado.height} registro(s) encontrado(s).")
-            st.dataframe(resultado.to_pandas())
+            # Coluna "Product Description" em maiúsculo
+            if "Product Description" in resultado.columns:
+                resultado = resultado.with_columns([
+                    pl.col("Product Description").str.to_uppercase().alias("Product Description")
+                ])
+
+            # Converter para Pandas antes de exibir / exportar
+            resultado_pd = resultado.to_pandas()
+
+            # Coluna Price com símbolo de dólar (tratando valores não numéricos)
+            if "Price" in resultado_pd.columns:
+                resultado_pd["Price"] = resultado_pd["Price"].apply(
+                    lambda x: f"${float(x):,.2f}" if pd.notnull(x) and str(x).replace('.','',1).isdigit() else ""
+                )
+
+            st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
+            st.dataframe(resultado_pd)
 
             # --- Botão CSV ---
-            csv_bytes = resultado.write_csv()
+            csv_bytes = resultado_pd.to_csv(index=False).encode("utf-8")
             st.download_button(
                 label="⬇️ Baixar resultado em CSV",
                 data=csv_bytes,
@@ -88,7 +98,7 @@ if st.button("🔍 Buscar"):
 
             # --- Botão Excel ---
             output = BytesIO()
-            resultado.to_pandas().to_excel(output, index=False, sheet_name="Resultado")
+            resultado_pd.to_excel(output, index=False, sheet_name="Resultado")
             st.download_button(
                 label="⬇️ Baixar resultado em Excel",
                 data=output.getvalue(),
