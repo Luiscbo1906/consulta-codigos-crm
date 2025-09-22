@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from io import BytesIO
 import re
+from PIL import Image
 
 # --- Configurações da página ---
 st.set_page_config(
@@ -21,8 +22,18 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- Cabeçalho com título e lupa ---
-st.markdown('<div class="title">🔎 Consulta de Códigos CRM</div>', unsafe_allow_html=True)
+# --- Cabeçalho com logo opcional ---
+try:
+    logo = Image.open("logo.png")
+    col1, col2 = st.columns([1, 5])
+    with col1:
+        st.image(logo, width=80)
+    with col2:
+        st.markdown('<div class="title">🔎 Consulta de Códigos CRM</div>', unsafe_allow_html=True)
+except FileNotFoundError:
+    # Se não houver logo, mostra só o título
+    st.markdown('<div class="title">🔎 Consulta de Códigos CRM</div>', unsafe_allow_html=True)
+
 st.markdown("---")  # linha horizontal
 
 # --- Ler Excel embutido ---
