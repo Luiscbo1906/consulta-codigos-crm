@@ -78,10 +78,10 @@ if st.button("🔍 Buscar"):
             # Converter para Pandas antes de exibir / exportar
             resultado_pd = resultado.to_pandas()
 
-            # Coluna Price com símbolo de dólar
+            # Coluna Price com símbolo de dólar (tratando valores não numéricos)
             if "Price" in resultado_pd.columns:
                 resultado_pd["Price"] = resultado_pd["Price"].apply(
-                    lambda x: f"${x:,.2f}" if pd.notnull(x) else ""
+                    lambda x: f"${float(x):,.2f}" if pd.notnull(x) and str(x).replace('.','',1).isdigit() else ""
                 )
 
             st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
