@@ -53,7 +53,7 @@ df = pl.read_excel("dados.xlsx")
 
 # --- Campo de entrada ---
 codigos_input = st.text_area(
-    "Digite ou cole os Product IDs:",
+    "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
     placeholder="Ex: 12345, 67890"
 )
 
@@ -74,6 +74,12 @@ if st.button("🔍 Buscar"):
             if "Product Description" in resultado.columns:
                 resultado = resultado.with_columns([
                     pl.col("Product Description").str.to_uppercase().alias("Product Description")
+                ])
+
+            # Coluna "Price" com símbolo de dólar
+            if "Price" in resultado.columns:
+                resultado = resultado.with_columns([
+                    pl.col("Price").apply(lambda x: f"${x:,.2f}").alias("Price")
                 ])
 
             st.success(f"🔹 {resultado.height} registro(s) encontrado(s).")
@@ -99,4 +105,3 @@ if st.button("🔍 Buscar"):
             )
         else:
             st.warning("Nenhum Product ID encontrado.")
-
