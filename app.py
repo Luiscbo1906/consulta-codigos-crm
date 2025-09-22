@@ -16,13 +16,9 @@ df = carregar_dados()
 if "input_area" not in st.session_state:
     st.session_state["input_area"] = ""
 
-codigos_input = st.text_area(
-    "Digite os códigos (um por linha):",
-    value=st.session_state["input_area"],
-    height=150
-)
+codigos_input = st.text_area("Digite os códigos (um por linha):", value=st.session_state["input_area"], height=150)
 
-col1, col2 = st.columns([1, 1])
+col1, col2 = st.columns([1,1])
 with col1:
     buscar = st.button("🔍 Buscar")
 with col2:
@@ -30,10 +26,9 @@ with col2:
         st.session_state.input_area = ""
         st.experimental_rerun()
 
-# --- Função para manter preço com $ ---
+# --- Função para manter preço igual Excel com $ ---
 def manter_preco_com_dolar(x):
-    if x is None:
-        return ""
+    if x is None: return ""
     s = str(x).strip()
     if s == "" or s.lower() in ["nan", "none", "na", "n/a"]:
         return ""
@@ -44,13 +39,20 @@ def manter_preco_com_dolar(x):
 # --- Busca ---
 if buscar and codigos_input.strip():
     codigos = [c.strip() for c in codigos_input.split("\n") if c.strip()]
+
     resultado = df.filter(pl.col("Product ID").is_in(codigos))
 
     if resultado.is_empty():
         st.warning("Nenhum código encontrado.")
     else:
-        # Selecionar apenas as 3 colunas da planilha
-        resultado = resultado.select(["Product ID", "Description", "Price"])
+        # --- Ajuste da primeira coluna como Pos ID ---
+        cols = resultado.columns
+        if cols[0] != "Product ID":
+            resultado = resultado.rename({cols[0]: "Pos ID"})
+
+        # Selecionar somente colunas desejadas
+        colunas_exibir = [c for c in resultado.columns if c in ["Pos ID", "Product ID", "Description", "Price"]]
+        resultado = resultado.select(colunas_exibir)
 
         # Description em maiúsculo
         resultado = resultado.with_column(pl.col("Description").str.to_uppercase())
@@ -58,18 +60,24 @@ if buscar and codigos_input.strip():
         # Price com $
         resultado = resultado.with_column(pl.col("Price").apply(manter_preco_com_dolar))
 
-        # Converter para pandas e resetar índice para não mostrar coluna fantasma
+        # Converter para pandas
         resultado_pd = resultado.to_pandas()
-        resultado_pd.reset_index(drop=True, inplace=True)
+        resultado_pd.reset_index(drop=True, inplace=True)  # remove índice fantasma
 
         # --- AgGrid ---
         gb = GridOptionsBuilder.from_dataframe(resultado_pd)
-        gb.configure_grid_options(domLayout='normal', hideIndex=True)
+        gb.configure_grid_options(domLayout='normal')
 
         # Ajustar largura das colunas
-        gb.configure_column("Product ID", width=150)
-        gb.configure_column("Description", width=300)
-        gb.configure_column("Price", width=120)
+        for col in resultado_pd.columns:
+            if col == "Pos ID":
+                gb.configure_column(col, width=80, header_name="Pos ID")
+            elif col == "Product ID":
+                gb.configure_column(col, width=150)
+            elif col == "Description":
+                gb.configure_column(col, width=300)
+            elif col == "Price":
+                gb.configure_column(col, width=120)
 
         # Zebra alternada
         gb.configure_grid_options(
@@ -100,9 +108,5 @@ if buscar and codigos_input.strip():
 
         xlsx = BytesIO()
         resultado_pd.to_excel(xlsx, index=False, sheet_name="Resultado")
-        st.download_button(
-            "⬇️ Excel",
-            xlsx.getvalue(),
-            "resultado.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+        st.download_button("⬇️ Excel", xlsx.getvalue(), "resultado.xlsx",
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
