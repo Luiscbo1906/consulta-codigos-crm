@@ -49,9 +49,8 @@ with col2:
 
 st.markdown("---")
 
-# --- Ler arquivo otimizado para grandes volumes ---
-# Recomenda-se converter seu Excel grande para Parquet: dados.parquet
-df = pl.read_parquet("dados.parquet")  # muito mais rápido que Excel
+# --- Ler Excel com Polars ---
+df = pl.read_excel("dados.xlsx")
 
 # --- Campo de entrada ---
 codigos_input = st.text_area(
