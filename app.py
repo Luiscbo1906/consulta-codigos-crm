@@ -36,9 +36,6 @@ body {
     border: 1px solid #0A4C6A;
     height: 120px !important;
 }
-.stDataFrame > div[data-testid="stDataFrame"] table {
-    width: 100%;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -96,6 +93,9 @@ if buscar:
         resultado_pd = df[df["Product ID"].isin(lista_codigos)].copy()
 
         if len(resultado_pd) > 0:
+            # Adicionar coluna ID sequencial no início
+            resultado_pd.insert(0, "ID", range(1, len(resultado_pd)+1))
+
             # Product Description em maiúsculo
             if "Product Description" in resultado_pd.columns:
                 resultado_pd["Product Description"] = resultado_pd["Product Description"].str.upper()
@@ -104,13 +104,10 @@ if buscar:
             if "Price" in resultado_pd.columns:
                 resultado_pd["Price"] = resultado_pd["Price"].apply(add_dolar)
 
-            # Adicionar coluna ID sequencial no início
-            resultado_pd.insert(0, "ID", range(1, len(resultado_pd)+1))
-
             st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
 
             # Exibir DataFrame sem índice do Pandas
-            st.dataframe(resultado_pd.style.hide_index(), use_container_width=True)
+            st.dataframe(resultado_pd, use_container_width=True)
 
             # --- Botão CSV ---
             csv_bytes = resultado_pd.to_csv(index=False).encode("utf-8")
