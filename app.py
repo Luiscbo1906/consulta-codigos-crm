@@ -8,7 +8,7 @@ from PIL import Image
 st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
 
 # --- Cabeçalho com título e logo ---
-logo_path = "logo.png"  # substitua pelo caminho correto do logo
+logo_path = "logo.png"  # Substitua pelo caminho correto do logo
 try:
     logo = Image.open(logo_path)
     col1, col2 = st.columns([3, 1])
@@ -93,27 +93,13 @@ if buscar and codigos_input.strip():
         gb.configure_column("Product_Description", width=350)
         gb.configure_column("Price", width=120)
 
-        # Zebra alternada
-        gb.configure_grid_options(
-            getRowStyle="""
-            function(params) {
-                if (params.node.rowIndex % 2 === 0) {
-                    return {'background-color':'#f9f9f9'};
-                } else {
-                    return {'background-color':'white'};
-                }
-            }
-            """
-        )
-
         gridOptions = gb.build()
 
         AgGrid(
             resultado_pd,
             gridOptions=gridOptions,
             height=400,
-            fit_columns_on_grid_load=True,
-            allow_unsafe_jscode=True
+            fit_columns_on_grid_load=True
         )
 
         # --- Downloads ---
