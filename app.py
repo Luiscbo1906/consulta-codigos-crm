@@ -12,6 +12,10 @@ st.set_page_config(
     layout="wide"
 )
 
+# --- Inicializar session_state ---
+if "input_area" not in st.session_state:
+    st.session_state["input_area"] = ""
+
 # --- Estilo tipo CRM ---
 st.markdown("""
 <style>
@@ -24,6 +28,7 @@ body {
     font-weight: bold;
     border-radius: 8px;
     height: 40px;
+    min-width: 120px;
 }
 .stTextArea>div>div>textarea {
     border-radius: 5px;
@@ -36,7 +41,7 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-# --- Cabeçalho: título à esquerda e logo à direita ---
+# --- Cabeçalho ---
 col1, col2 = st.columns([5, 1])
 with col1:
     st.markdown('<h1 style="color:#0A4C6A; margin:0;">🔎 Consulta de Códigos CRM</h1>', unsafe_allow_html=True)
@@ -49,20 +54,23 @@ with col2:
 
 st.markdown("---")
 
-# --- Ler Excel com Polars ---
+# --- Ler Excel ---
 df = pl.read_excel("dados.xlsx")
 
 # --- Campo de entrada ---
 codigos_input = st.text_area(
     "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
     placeholder="Ex: 12345, 67890",
-    key="input_area"
+    key="input_area",
+    height=100
 )
 
-# --- Botões Buscar e Nova Pesquisa lado a lado com espaçamento menor ---
-col_btn1, col_btn2, col_btn3 = st.columns([1,1,8])  # col_btn3 serve só para empurrar os botões à esquerda
-buscar = col_btn1.button("🔍 Buscar")
-nova_pesquisa = col_btn2.button("🆕 Nova Pesquisa")
+# --- Botões lado a lado ---
+col_btn1, col_btn2 = st.columns([1,1])
+with col_btn1:
+    buscar = st.button("🔍 Buscar")
+with col_btn2:
+    nova_pesquisa = st.button("🆕 Nova Pesquisa")
 
 if nova_pesquisa:
     st.session_state["input_area"] = ""
