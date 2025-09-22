@@ -44,7 +44,7 @@ with col2:
         logo = Image.open("logo.png")
         st.image(logo, width=180)
     except FileNotFoundError:
-        pass  # ignora se não houver logo
+        pass
 
 st.markdown("---")
 
@@ -62,11 +62,9 @@ if st.button("🔍 Buscar"):
     if codigos_input.strip() == "":
         st.warning("Digite ou cole pelo menos um Product ID.")
     else:
-        # Separar múltiplos IDs
         lista_codigos = re.split(r'[\s,;]+', codigos_input.strip())
         lista_codigos = [c.strip() for c in lista_codigos if c.strip() != ""]
 
-        # Filtrar com Polars
         resultado = df.filter(pl.col("Product ID").is_in(lista_codigos))
 
         if resultado.height > 0:
@@ -76,17 +74,20 @@ if st.button("🔍 Buscar"):
                     pl.col("Product Description").str.to_uppercase().alias("Product Description")
                 ])
 
-            # Coluna "Price" com símbolo de dólar
-            if "Price" in resultado.columns:
-                resultado = resultado.with_columns([
-                    pl.col("Price").apply(lambda x: f"${x:,.2f}" if x is not None else "").alias("Price")
-                ])
+            # Converter para Pandas antes de exibir / exportar
+            resultado_pd = resultado.to_pandas()
 
-            st.success(f"🔹 {resultado.height} registro(s) encontrado(s).")
-            st.dataframe(resultado.to_pandas())
+            # Coluna Price com símbolo de dólar
+            if "Price" in resultado_pd.columns:
+                resultado_pd["Price"] = resultado_pd["Price"].apply(
+                    lambda x: f"${x:,.2f}" if pd.notnull(x) else ""
+                )
+
+            st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
+            st.dataframe(resultado_pd)
 
             # --- Botão CSV ---
-            csv_bytes = resultado.write_csv()
+            csv_bytes = resultado_pd.to_csv(index=False).encode("utf-8")
             st.download_button(
                 label="⬇️ Baixar resultado em CSV",
                 data=csv_bytes,
@@ -96,7 +97,7 @@ if st.button("🔍 Buscar"):
 
             # --- Botão Excel ---
             output = BytesIO()
-            resultado.to_pandas().to_excel(output, index=False, sheet_name="Resultado")
+            resultado_pd.to_excel(output, index=False, sheet_name="Resultado")
             st.download_button(
                 label="⬇️ Baixar resultado em Excel",
                 data=output.getvalue(),
