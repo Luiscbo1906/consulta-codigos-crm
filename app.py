@@ -8,7 +8,7 @@ from PIL import Image
 st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
 
 # --- Cabeçalho com título e logo ---
-logo_path = "logo.png"  # substitua pelo caminho correto do logo no repositório
+logo_path = "logo.png"  # substitua pelo caminho correto do logo
 try:
     logo = Image.open(logo_path)
     col1, col2 = st.columns([3, 1])
@@ -23,13 +23,11 @@ except FileNotFoundError:
 @st.cache_data
 def carregar_dados(caminho="dados.xlsx"):
     df = pl.read_excel(caminho)
-    # Renomear as colunas para nomes consistentes
     df = df.rename({
         df.columns[0]: "Product_ID",
         df.columns[1]: "Product_Description",
         df.columns[2]: "Price"
     })
-    # Garantir que seja DataFrame, não LazyFrame
     return pl.DataFrame(df)
 
 df = carregar_dados()
@@ -76,10 +74,10 @@ if buscar and codigos_input.strip():
         # Selecionar apenas as 3 colunas
         resultado = resultado.select(["Product_ID", "Product_Description", "Price"])
 
-        # Converter para strings e colocar Description em maiúsculo
+        # Converter Description para maiúsculo
         resultado = resultado.with_columns([
             pl.col("Product_Description").cast(pl.Utf8).str.to_uppercase(),
-            pl.col("Price").apply(manter_preco_com_dolar)
+            pl.col("Price").cast(pl.Utf8).apply(manter_preco_com_dolar)
         ])
 
         # Converter para pandas e resetar índice
