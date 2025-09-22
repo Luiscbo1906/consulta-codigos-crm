@@ -57,7 +57,7 @@ with col2:
 st.markdown("---")
 
 # --- Ler Excel com Pandas ---
-df = pd.read_excel("dados.xlsx")
+df = pd.read_excel("dados.xlsx", dtype=str)  # lê tudo como string, sem conversão
 
 # --- Função para Nova Pesquisa ---
 def limpar_input():
@@ -77,11 +77,11 @@ with btn_col1:
 with btn_col2:
     nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
 
-# --- Função para formatar preço com $ ---
-def format_price_safe(x):
-    try:
-        return f"${float(x):,.2f}"
-    except:
+# --- Função para adicionar $ no preço mantendo exatamente o que está ---
+def add_dolar(x):
+    if x and x.strip() != "":
+        return f"${x.strip()}"
+    else:
         return ""
 
 # --- Ação Buscar ---
@@ -89,9 +89,11 @@ if buscar:
     if codigos_input.strip() == "":
         st.warning("Digite ou cole pelo menos um Product ID.")
     else:
+        # separar os códigos por vírgula, espaço ou tab
         lista_codigos = re.split(r'[\s,;]+', codigos_input.strip())
         lista_codigos = [c.strip() for c in lista_codigos if c.strip() != ""]
 
+        # Filtrar na planilha (como PROCV)
         resultado_pd = df[df["Product ID"].isin(lista_codigos)].copy()
 
         if len(resultado_pd) > 0:
@@ -99,9 +101,9 @@ if buscar:
             if "Product Description" in resultado_pd.columns:
                 resultado_pd["Product Description"] = resultado_pd["Product Description"].str.upper()
 
-            # Price com $
+            # Price com $ adicionando apenas
             if "Price" in resultado_pd.columns:
-                resultado_pd["Price"] = resultado_pd["Price"].apply(format_price_safe)
+                resultado_pd["Price"] = resultado_pd["Price"].apply(add_dolar)
 
             st.success(f"🔹 {len(resultado_pd)} registro(s) encontrado(s).")
             st.dataframe(resultado_pd)
