@@ -19,7 +19,7 @@ st.dataframe(df.head())
 
 # Entrada de Product IDs
 codigos_input = st.text_area(
-    "Digite ou cole os Product IDs (de qualquer fonte, separados por vírgula, espaço ou tabulação):"
+    "Digite ou cole os Product IDs:"
 )
 
 # Botão para buscar
@@ -61,4 +61,5 @@ if st.button("🔍 Buscar"):
             )
         else:
             st.warning("Nenhum Product ID encontrado.")
+
 
