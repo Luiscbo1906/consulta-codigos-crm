@@ -79,7 +79,7 @@ if st.button("🔍 Buscar"):
             # Coluna "Price" com símbolo de dólar
             if "Price" in resultado.columns:
                 resultado = resultado.with_columns([
-                    pl.col("Price").apply(lambda x: f"${x:,.2f}").alias("Price")
+                    pl.col("Price").apply(lambda x: f"${x:,.2f}" if x is not None else "").alias("Price")
                 ])
 
             st.success(f"🔹 {resultado.height} registro(s) encontrado(s).")
