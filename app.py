@@ -30,7 +30,6 @@ body {
     border-radius: 8px;
     height: 40px;
     min-width: 120px;
-    margin-top: 5px;
 }
 .stTextArea>div>div>textarea {
     border-radius: 5px;
@@ -59,9 +58,12 @@ st.markdown("---")
 # --- Ler Excel ---
 df = pl.read_excel("dados.xlsx")
 
-# --- Campo de entrada e botões em layout tipo CRM ---
+# --- Função para Nova Pesquisa ---
+def limpar_input():
+    st.session_state["input_area"] = ""
+
+# --- Campo de input e botões alinhados verticalmente ---
 with st.container():
-    st.write("")  # espaçamento
     input_col, btn_col1, btn_col2 = st.columns([4,1,1])
     
     with input_col:
@@ -72,12 +74,13 @@ with st.container():
             height=80
         )
     
-    def limpar_input():
-        st.session_state["input_area"] = ""
-    
+    # Criar espaço extra para centralizar verticalmente
+    st.write("")  # pequeno espaçamento
     with btn_col1:
+        st.markdown("<div style='display:flex; align-items:center; height:100%;'><button style='height:40px; width:100%;'>🔍 Buscar</button></div>", unsafe_allow_html=True)
         buscar = st.button("🔍 Buscar")
     with btn_col2:
+        st.markdown("<div style='display:flex; align-items:center; height:100%;'><button style='height:40px; width:100%;'>🆕 Nova Pesquisa</button></div>", unsafe_allow_html=True)
         nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
 
 # --- Ação Buscar ---
