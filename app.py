@@ -77,7 +77,7 @@ with btn_col1:
 with btn_col2:
     nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
 
-# --- Função para adicionar $ no preço mantendo exatamente o que está ---
+# --- Função para adicionar $ mantendo valor original ---
 def add_dolar(x):
     if x and x.strip() != "":
         return f"${x.strip()}"
@@ -93,15 +93,18 @@ if buscar:
         lista_codigos = re.split(r'[\s,;]+', codigos_input.strip())
         lista_codigos = [c.strip() for c in lista_codigos if c.strip() != ""]
 
-        # Filtrar na planilha (como PROCV)
+        # Filtrar na planilha
         resultado_pd = df[df["Product ID"].isin(lista_codigos)].copy()
 
         if len(resultado_pd) > 0:
+            # Adicionar coluna ID sequencial
+            resultado_pd.insert(0, "ID", range(1, len(resultado_pd)+1))
+
             # Product Description em maiúsculo
             if "Product Description" in resultado_pd.columns:
                 resultado_pd["Product Description"] = resultado_pd["Product Description"].str.upper()
 
-            # Price com $ adicionando apenas
+            # Price com $
             if "Price" in resultado_pd.columns:
                 resultado_pd["Price"] = resultado_pd["Price"].apply(add_dolar)
 
