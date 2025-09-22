@@ -35,7 +35,7 @@ with col2:
         st.session_state.input_area = ""
         st.experimental_rerun()
 
-# --- Função para manter preço com $ ---
+# --- Função para manter preço com $
 def manter_preco_com_dolar(x):
     if x is None:
         return ""
@@ -100,4 +100,14 @@ if buscar and codigos_input.strip():
         )
 
         # --- Downloads ---
-        csv_bytes = resultado_pd.to_csv(index=False).encode("ut_
+        csv_bytes = resultado_pd.to_csv(index=False).encode("utf-8")
+        st.download_button("⬇️ CSV", csv_bytes, "resultado.csv", mime="text/csv")
+
+        xlsx = BytesIO()
+        resultado_pd.to_excel(xlsx, index=False, sheet_name="Resultado")
+        st.download_button(
+            "⬇️ Excel",
+            xlsx.getvalue(),
+            "resultado.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
