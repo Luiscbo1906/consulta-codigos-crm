@@ -34,10 +34,16 @@ body {
 .stTextArea>div>div>textarea {
     border-radius: 5px;
     border: 1px solid #0A4C6A;
+    height: 80px !important;
 }
 .stDataFrame {
     border: 1px solid #0A4C6A;
     border-radius: 5px;
+}
+.vertical-center {
+    display: flex;
+    align-items: center;
+    height: 100%;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -62,7 +68,7 @@ df = pl.read_excel("dados.xlsx")
 def limpar_input():
     st.session_state["input_area"] = ""
 
-# --- Campo de input e botões alinhados ---
+# --- Campo de input e botões alinhados verticalmente ---
 with st.container():
     input_col, btn_col1, btn_col2 = st.columns([4,1,1])
     
@@ -71,13 +77,17 @@ with st.container():
             "Digite ou cole os Product IDs (separados por vírgula, espaço ou tabulação):",
             placeholder="Ex: 12345, 67890",
             key="input_area",
-            height=80
         )
     
     with btn_col1:
+        st.markdown("<div class='vertical-center'>", unsafe_allow_html=True)
         buscar = st.button("🔍 Buscar")
+        st.markdown("</div>", unsafe_allow_html=True)
+        
     with btn_col2:
+        st.markdown("<div class='vertical-center'>", unsafe_allow_html=True)
         nova_pesquisa = st.button("🆕 Nova Pesquisa", on_click=limpar_input)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Ação Buscar ---
 if buscar:
