@@ -1,8 +1,6 @@
 import streamlit as st
-import polars as pl
 import pandas as pd
 from PIL import Image
-import base64
 from io import BytesIO
 
 # -----------------------------
@@ -10,7 +8,7 @@ from io import BytesIO
 # -----------------------------
 @st.cache_data
 def carregar_dados():
-    df = pl.read_excel("dados.xlsx", sheet_name="Planilha1")
+    df = pd.read_excel("dados.xlsx", sheet_name="Planilha1")
     return df
 
 # -----------------------------
@@ -61,29 +59,25 @@ if botao:
         df = carregar_dados()
 
         # Filtra apenas os códigos informados
-        resultado = df.filter(pl.col("Product ID").is_in(codigos))
+        resultado = df[df["Product ID"].isin(codigos)]
 
         # Colunas que queremos
-        resultado = resultado.select(["Product ID", "Product Description", "Price"])
+        resultado = resultado[["Product ID", "Product Description", "Price"]]
 
         # Product Description em maiúsculo
-        resultado = resultado.with_column(
-            pl.col("Product Description").str.to_uppercase()
-        )
+        resultado["Product Description"] = resultado["Product Description"].str.upper()
 
-        resultado_pd = resultado.to_pandas()
-
-        st.success(f"{len(resultado_pd)} código(s) encontrado(s)")
+        st.success(f"{len(resultado)} código(s) encontrado(s)")
 
         # Mostra tabela
-        st.dataframe(resultado_pd, use_container_width=True)
+        st.dataframe(resultado, use_container_width=True)
 
         # -----------------------------
         # Download em Excel
         # -----------------------------
         output = BytesIO()
         with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-            resultado_pd.to_excel(writer, index=False, sheet_name="Resultados")
+            resultado.to_excel(writer, index=False, sheet_name="Resultados")
             writer.save()
             processed_data = output.getvalue()
 
