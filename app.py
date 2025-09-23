@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import io
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 # ==============================
 # Configuração da página
@@ -14,7 +14,6 @@ col1, col2 = st.columns([6, 1])
 with col1:
     st.markdown("<h2 style='font-family: Arial;'>🔍 Consulta de Códigos CRM</h2>", unsafe_allow_html=True)
 with col2:
-    # Substitua 'logo.png' pelo caminho do seu logo
     st.image("logo.png", width=200)
 
 # ==============================
@@ -31,12 +30,8 @@ df = carregar_dados()
 # ==============================
 input_area = st.text_area("Digite os códigos (um por linha):", height=120)
 
-# Botão de pesquisa abaixo da caixa de input
 buscar = st.button("Pesquisar")
 
-# ==============================
-# Pesquisa
-# ==============================
 if buscar and input_area.strip():
     codigos_digitados = [c.strip() for c in input_area.splitlines() if c.strip()]
     resultado = df[df["Product ID"].isin(codigos_digitados)].copy()
@@ -47,20 +42,33 @@ if buscar and input_area.strip():
         # Selecionar apenas as 3 colunas desejadas
         resultado = resultado[["Product ID", "Product Description", "Price"]]
 
-        # Coluna Product Description em maiúsculo
+        # Product Description em maiúsculo
         resultado["Product Description"] = resultado["Product Description"].str.upper()
 
-        # Coluna Price com símbolo do dólar
+        # Preço com símbolo do dólar
         resultado["Price"] = "$" + resultado["Price"].astype(str)
 
-        # Resetar índice para remover coluna fantasma
-        resultado_display = resultado.reset_index(drop=True)
+        # ==============================
+        # Exibir com AgGrid (sem coluna índice)
+        # ==============================
+        gb = GridOptionsBuilder.from_dataframe(resultado)
+        gb.configure_default_column(resizable=True, sortable=True, filter=True)
+        gb.configure_grid_options(domLayout='normal')  # evitar scroll horizontal estranho
+        gridOptions = gb.build()
 
-        # Exibir resultado
         st.subheader("Resultado da Pesquisa")
-        st.dataframe(resultado_display, use_container_width=True, height=400)
+        AgGrid(
+            resultado,
+            gridOptions=gridOptions,
+            fit_columns_on_grid_load=True,
+            enable_enterprise_modules=False,
+            height=400,
+        )
 
-        # Botão download Excel
+        # ==============================
+        # Download Excel
+        # ==============================
+        import io
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
             resultado.to_excel(writer, index=False, sheet_name="Resultados")
@@ -72,4 +80,3 @@ if buscar and input_area.strip():
             file_name="resultado_codigos.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-
