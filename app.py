@@ -1,7 +1,6 @@
 import streamlit as st
 import polars as pl
 import pandas as pd
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 import io
 
 # ==============================
@@ -11,7 +10,7 @@ st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
 
 st.markdown(
     """
-    <h2 style="display: flex; align-items: center; font-family: Arial; margin-bottom: 20px;">
+    <h2 style="font-family: Arial; margin-bottom: 20px;">
         🔍 Consulta de Códigos CRM
     </h2>
     """,
@@ -60,31 +59,10 @@ if buscar and input_area.strip():
         resultado_pd = resultado.to_pandas()
 
         # ==============================
-        # Configuração AgGrid
+        # Exibição na tabela
         # ==============================
-        gb = GridOptionsBuilder.from_dataframe(resultado_pd)
-        gb.configure_default_column(
-            resizable=True, filter=True, sortable=True, wrapText=True, autoHeight=True
-        )
-        gb.configure_grid_options(
-            getRowStyle="""function(params) {
-                if (params.node.rowIndex % 2 === 0) {
-                    return { 'backgroundColor': '#f9f9f9' }
-                }
-                return { 'backgroundColor': 'white' }
-            }"""
-        )
-        gridOptions = gb.build()
-
         st.subheader("Resultado da Pesquisa")
-        AgGrid(
-            resultado_pd,
-            gridOptions=gridOptions,
-            update_mode=GridUpdateMode.NO_UPDATE,
-            fit_columns_on_grid_load=True,
-            height=400,
-            theme="balham",
-        )
+        st.dataframe(resultado_pd, use_container_width=True, height=400)
 
         # ==============================
         # Botão para download em Excel formatado (openpyxl)
