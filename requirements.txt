@@ -5,3 +5,5 @@ pandas
 openpyxl
 fastexcel
 Pillow
+st-aggrid
+xlsxwriter
