@@ -1,89 +1,77 @@
 import streamlit as st
 import pandas as pd
-from PIL import Image
-from io import BytesIO
+import io
 
-# -----------------------------
-# Função para carregar dados
-# -----------------------------
-@st.cache_data
-def carregar_dados():
-    df = pd.read_excel("dados.xlsx", sheet_name="Planilha1")
-    return df
-
-# -----------------------------
-# Página
-# -----------------------------
+# ==============================
+# Configuração da página
+# ==============================
 st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
 
-# CSS customizado
-st.markdown(
-    """
-    <style>
-    body {font-family: 'Calibri', sans-serif;}
-    .stButton>button {height:40px; width:120px;}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# -----------------------------
-# Cabeçalho com logo e título
-# -----------------------------
-col1, col2 = st.columns([3,1])
+# ==============================
+# Cabeçalho com título e logo
+# ==============================
+col1, col2 = st.columns([6, 1])
 with col1:
-    st.markdown("## 🔍 Consulta de Códigos CRM")
+    st.markdown("<h2 style='font-family: Arial;'>🔍 Consulta de Códigos CRM</h2>", unsafe_allow_html=True)
 with col2:
-    img = Image.open("logo.png")
-    st.markdown("<a href='https://irmen.com.br/' target='_blank'>", unsafe_allow_html=True)
-    st.image(img, width=200)
-    st.markdown("</a>", unsafe_allow_html=True)
+    st.image("logo.png", width=100)
 
-st.write("---")
+# ==============================
+# Carregar dados
+# ==============================
+@st.cache_data
+def carregar_dados():
+    return pd.read_excel("dados.xlsx", sheet_name="Planilha1")
 
-# -----------------------------
-# Caixa de input e botão
-# -----------------------------
-codigos_input = st.text_area("Insira os códigos separados por vírgula ou espaço:", height=100)
-botao = st.button("Pesquisar")
+df = carregar_dados()
 
-# -----------------------------
-# Processamento da busca
-# -----------------------------
-if botao:
-    if codigos_input.strip() == "":
-        st.warning("Por favor, informe pelo menos 1 código!")
+# ==============================
+# Caixa de busca
+# ==============================
+input_area = st.text_area("Digite os códigos (um por linha):", height=120)
+
+buscar = st.button("Pesquisar")
+
+if buscar:
+    if not input_area.strip():
+        st.warning("Por favor, informe pelo menos 1 código para pesquisar.")
     else:
-        codigos = [c.strip() for c in codigos_input.replace("\n",",").replace(" ",",").split(",") if c.strip()]
+        codigos_digitados = [c.strip() for c in input_area.splitlines() if c.strip()]
+        resultado = df[df["Product ID"].isin(codigos_digitados)].copy()
 
-        df = carregar_dados()
+        if resultado.empty:
+            st.warning("Nenhum código encontrado.")
+        else:
+            # Selecionar apenas as 3 colunas desejadas
+            resultado = resultado[["Product ID", "Product Description", "Price"]]
 
-        # Filtra apenas os códigos informados
-        resultado = df[df["Product ID"].isin(codigos)]
+            # Product Description em maiúsculo
+            resultado["Product Description"] = resultado["Product Description"].str.upper()
 
-        # Colunas que queremos
-        resultado = resultado[["Product ID", "Product Description", "Price"]]
+            # Preço com símbolo do dólar
+            resultado["Price"] = "$" + resultado["Price"].astype(str)
 
-        # Product Description em maiúsculo
-        resultado["Product Description"] = resultado["Product Description"].str.upper()
+            # ==============================
+            # Mensagem de quantos códigos encontrados
+            # ==============================
+            st.success(f"Foram encontrados {len(resultado)} código(s).")
 
-        st.success(f"{len(resultado)} código(s) encontrado(s)")
+            # ==============================
+            # Exibir resultado
+            # ==============================
+            st.dataframe(resultado, use_container_width=True)
 
-        # Mostra tabela
-        st.dataframe(resultado, use_container_width=True)
+            # ==============================
+            # Download Excel
+            # ==============================
+            output = io.BytesIO()
+            with pd.ExcelWriter(output, engine="openpyxl") as writer:
+                resultado.to_excel(writer, index=False, sheet_name="Resultados")
+            output.seek(0)
 
-        # -----------------------------
-        # Download em Excel
-        # -----------------------------
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-            resultado.to_excel(writer, index=False, sheet_name="Resultados")
-            writer.save()
-            processed_data = output.getvalue()
-
-        st.download_button(
-            label="⬇️ Download Excel",
-            data=processed_data,
-            file_name="resultado.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+            st.download_button(
+                label="📥 Baixar resultado em Excel",
+                data=output,
+                file_name="resultado_codigos.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
