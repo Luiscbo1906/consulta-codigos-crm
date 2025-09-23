@@ -12,7 +12,7 @@ st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
 # ==============================
 col1, col2 = st.columns([6, 1])
 with col1:
-    st.markdown("<h2 style='font-family: Aptos;'>🔍 Consulta de Códigos CRM</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='font-family: Calibri;'>🔍 Consulta de Códigos CRM</h2>", unsafe_allow_html=True)
 with col2:
     st.image("logo.png", width=200)
 
@@ -75,3 +75,4 @@ if buscar:
                 file_name="resultado_codigos.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
+
