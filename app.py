@@ -12,7 +12,7 @@ st.set_page_config(page_title="Consulta de preço [USD] CRM", layout="wide")
 # ==============================
 col1, col2 = st.columns([6, 1])
 with col1:
-    st.markdown("<h2 style='font-family: Calibri;'>🔍 Consulta de Códigos CRM</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='font-family: Calibri;'>🔍 Consulta de preço [USD] CRM</h2>", unsafe_allow_html=True)
 with col2:
     st.image("logo.png", width=200)
 
@@ -68,4 +68,5 @@ if buscar:
 
             # Exibir resultado
             st.dataframe(resultado, height=400, use_container_width=True)
+
 
