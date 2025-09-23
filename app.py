@@ -29,7 +29,6 @@ df = carregar_dados()
 # Caixa de busca
 # ==============================
 input_area = st.text_area("Digite os códigos (um por linha):", height=120)
-
 buscar = st.button("Pesquisar")
 
 if buscar:
@@ -57,9 +56,21 @@ if buscar:
             st.success(f"Foram encontrados {len(resultado)} código(s).")
 
             # ==============================
-            # Exibir resultado
+            # Exibir resultado com linhas zebradas
             # ==============================
-            st.dataframe(resultado, use_container_width=True)
+            st.markdown(
+                resultado.style
+                .set_table_styles([
+                    {"selector": "thead", "props": [("background-color", "#4CAF50"), 
+                                                    ("color", "white"),
+                                                    ("font-family", "Calibri")]},
+                    {"selector": "tbody tr:nth-child(even)", "props": [("background-color", "#f2f2f2")]},
+                    {"selector": "tbody tr:nth-child(odd)", "props": [("background-color", "white")]}
+                ])
+                .set_properties(**{"font-family": "Calibri"})
+                .hide_index()
+                .to_html(), unsafe_allow_html=True
+            )
 
             # ==============================
             # Download Excel
