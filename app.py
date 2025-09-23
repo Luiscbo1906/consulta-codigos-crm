@@ -2,15 +2,23 @@ import streamlit as st
 import pandas as pd
 import io
 
+# ==============================
+# Configuração da página
+# ==============================
 st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
 
-st.markdown(
-    "<h2 style='font-family: Arial;'>🔍 Consulta de Códigos CRM</h2>", 
-    unsafe_allow_html=True
-)
+# ==============================
+# Cabeçalho com título e logo
+# ==============================
+col1, col2 = st.columns([6, 1])
+with col1:
+    st.markdown("<h2 style='font-family: Arial;'>🔍 Consulta de Códigos CRM</h2>", unsafe_allow_html=True)
+with col2:
+    # Substitua 'logo.png' pelo caminho do seu logo
+    st.image("logo.png", width=100)
 
 # ==============================
-# Carregar dados com Pandas
+# Carregar dados
 # ==============================
 @st.cache_data
 def carregar_dados():
@@ -19,14 +27,12 @@ def carregar_dados():
 df = carregar_dados()
 
 # ==============================
-# Caixa de busca + botão
+# Caixa de busca
 # ==============================
-col1, col2 = st.columns([6, 1])
-with col1:
-    input_area = st.text_area("Digite os códigos (um por linha):", height=120)
-with col2:
-    st.markdown("<div style='height:25px;'></div>", unsafe_allow_html=True)
-    buscar = st.button("Pesquisar", use_container_width=True)
+input_area = st.text_area("Digite os códigos (um por linha):", height=120)
+
+# Botão de pesquisa abaixo da caixa de input
+buscar = st.button("Pesquisar")
 
 # ==============================
 # Pesquisa
