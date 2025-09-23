@@ -58,19 +58,25 @@ if buscar:
             # ==============================
             # Exibir resultado com linhas zebradas
             # ==============================
-            st.markdown(
-                resultado.style
-                .set_table_styles([
-                    {"selector": "thead", "props": [("background-color", "#4CAF50"), 
-                                                    ("color", "white"),
-                                                    ("font-family", "Calibri")]},
-                    {"selector": "tbody tr:nth-child(even)", "props": [("background-color", "#f2f2f2")]},
-                    {"selector": "tbody tr:nth-child(odd)", "props": [("background-color", "white")]}
-                ])
-                .set_properties(**{"font-family": "Calibri"})
-                .hide_index()
-                .to_html(), unsafe_allow_html=True
-            )
+            def render_table(df):
+                html = "<table style='border-collapse: collapse; font-family: Calibri; width: 100%;'>"
+                # Cabeçalho
+                html += "<thead><tr style='background-color: #4CAF50; color: white;'>"
+                for col in df.columns:
+                    html += f"<th style='padding: 8px; text-align: left;'>{col}</th>"
+                html += "</tr></thead>"
+                # Corpo
+                html += "<tbody>"
+                for i, row in df.iterrows():
+                    bg = "#f2f2f2" if i % 2 == 0 else "white"
+                    html += f"<tr style='background-color: {bg};'>"
+                    for val in row:
+                        html += f"<td style='padding: 8px;'>{val}</td>"
+                    html += "</tr>"
+                html += "</tbody></table>"
+                return html
+
+            st.markdown(render_table(resultado), unsafe_allow_html=True)
 
             # ==============================
             # Download Excel
