@@ -14,7 +14,7 @@ col1, col2 = st.columns([6, 1])
 with col1:
     st.markdown("<h2 style='font-family: Arial;'>🔍 Consulta de Códigos CRM</h2>", unsafe_allow_html=True)
 with col2:
-    st.image("logo.png", width=100)
+    st.image("logo.png", width=200)
 
 # ==============================
 # Carregar dados
@@ -75,3 +75,4 @@ if buscar:
                 file_name="resultado_codigos.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
+
