@@ -12,8 +12,15 @@ st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
 # ==============================
 col1, col2 = st.columns([6, 1])
 with col1:
-    st.markdown("<h2 style='font-family: Arial;'>🔍 Consulta de Códigos CRM</h2>", unsafe_allow_html=True)
+    st.markdown(
+        "<h2 style='font-family: Calibri; margin-bottom: 0;'>🔍 Consulta de Códigos CRM</h2>", 
+        unsafe_allow_html=True
+    )
 with col2:
+    if st.button("", key="logo_button"):
+        st.experimental_set_query_params()
+        js = "window.open('https://irmen.com.br/')"  # abre o site ao clicar
+        st.components.v1.html(f"<script>{js}</script>", height=0)
     st.image("logo.png", width=200)
 
 # ==============================
@@ -28,9 +35,11 @@ df = carregar_dados()
 # ==============================
 # Caixa de busca
 # ==============================
-input_area = st.text_area("Digite os códigos (um por linha):", height=120)
+st.markdown("<div style='font-family: Calibri;'>Digite os códigos (um por linha):</div>", unsafe_allow_html=True)
+input_area = st.text_area("", height=140, key="input_area")
 
-buscar = st.button("Pesquisar")
+st.markdown("<br>", unsafe_allow_html=True)
+buscar = st.button("Pesquisar", key="buscar_button")
 
 if buscar:
     if not input_area.strip():
@@ -75,4 +84,3 @@ if buscar:
                 file_name="resultado_codigos.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
-
