@@ -56,10 +56,14 @@ if buscar:
             st.success(f"Foram encontrados {len(resultado)} código(s).")
 
             # ==============================
-            # Exibir resultado com linhas zebradas
+            # Exibir resultado com linhas zebradas e scroll
             # ==============================
-            def render_table(df):
-                html = "<table style='border-collapse: collapse; font-family: Calibri; width: 100%;'>"
+            def render_table_scroll(df, max_rows=20):
+                # calcular altura aproximada para 20 linhas
+                row_height = 40  # px
+                table_height = min(len(df), max_rows) * row_height
+                html = f"<div style='overflow-y: auto; height: {table_height}px;'>"
+                html += "<table style='border-collapse: collapse; font-family: Calibri; width: 100%;'>"
                 # Cabeçalho
                 html += "<thead><tr style='background-color: #4CAF50; color: white;'>"
                 for col in df.columns:
@@ -73,10 +77,10 @@ if buscar:
                     for val in row:
                         html += f"<td style='padding: 8px;'>{val}</td>"
                     html += "</tr>"
-                html += "</tbody></table>"
+                html += "</tbody></table></div>"
                 return html
 
-            st.markdown(render_table(resultado), unsafe_allow_html=True)
+            st.markdown(render_table_scroll(resultado), unsafe_allow_html=True)
 
             # ==============================
             # Download Excel
