@@ -14,7 +14,11 @@ col1, col2 = st.columns([6, 1])
 with col1:
     st.markdown("<h2 style='font-family: Calibri;'>🔍 Consulta de Códigos CRM</h2>", unsafe_allow_html=True)
 with col2:
-    st.image("logo.png", width=200)
+    st.markdown(
+        "<a href='https://irmen.com.br/' target='_blank'>"
+        "<img src='logo.png' width='200'></a>",
+        unsafe_allow_html=True
+    )
 
 # ==============================
 # Carregar dados
@@ -48,7 +52,7 @@ if buscar:
             # Product Description em maiúsculo
             resultado["Product Description"] = resultado["Product Description"].str.upper()
 
-            # Preço com símbolo do dólar
+            # Preço com símbolo do dólar (mantendo exatamente como está na planilha)
             resultado["Price"] = "$" + resultado["Price"].astype(str)
 
             # ==============================
@@ -75,4 +79,3 @@ if buscar:
                 file_name="resultado_codigos.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
-
