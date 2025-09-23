@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from st_aggrid import AgGrid, GridOptionsBuilder
+import io
 
 # ==============================
 # Configuração da página
@@ -14,7 +14,7 @@ col1, col2 = st.columns([6, 1])
 with col1:
     st.markdown("<h2 style='font-family: Arial;'>🔍 Consulta de Códigos CRM</h2>", unsafe_allow_html=True)
 with col2:
-    st.image("logo.png", width=200)
+    st.image("logo.png", width=100)
 
 # ==============================
 # Carregar dados
@@ -49,26 +49,18 @@ if buscar and input_area.strip():
         resultado["Price"] = "$" + resultado["Price"].astype(str)
 
         # ==============================
-        # Exibir com AgGrid (sem coluna índice)
+        # Mensagem de quantos códigos encontrados
         # ==============================
-        gb = GridOptionsBuilder.from_dataframe(resultado)
-        gb.configure_default_column(resizable=True, sortable=True, filter=True)
-        gb.configure_grid_options(domLayout='normal')  # evitar scroll horizontal estranho
-        gridOptions = gb.build()
+        st.success(f"Foram encontrados {len(resultado)} código(s).")
 
-        st.subheader("Resultado da Pesquisa")
-        AgGrid(
-            resultado,
-            gridOptions=gridOptions,
-            fit_columns_on_grid_load=True,
-            enable_enterprise_modules=False,
-            height=400,
-        )
+        # ==============================
+        # Exibir resultado
+        # ==============================
+        st.dataframe(resultado, use_container_width=True)
 
         # ==============================
         # Download Excel
         # ==============================
-        import io
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
             resultado.to_excel(writer, index=False, sheet_name="Resultados")
