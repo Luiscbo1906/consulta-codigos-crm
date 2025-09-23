@@ -12,17 +12,9 @@ st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
 # ==============================
 col1, col2 = st.columns([6, 1])
 with col1:
-    st.markdown(
-        "<h2 style='font-family: Calibri; margin-bottom: 0;'>🔍 Consulta de Códigos CRM</h2>", 
-        unsafe_allow_html=True
-    )
+    st.markdown("<h2 style='font-family: Calibri;'>🔍 Consulta de Códigos CRM</h2>", unsafe_allow_html=True)
 with col2:
-    # Logo clicável
-    st.markdown(
-        f"<a href='https://irmen.com.br/' target='_blank'>"
-        f"<img src='logo.png' width='200'></a>", 
-        unsafe_allow_html=True
-    )
+    st.image("logo.png", width=200)
 
 # ==============================
 # Carregar dados
@@ -36,11 +28,9 @@ df = carregar_dados()
 # ==============================
 # Caixa de busca
 # ==============================
-st.markdown("<div style='font-family: Calibri;'>Digite os códigos (um por linha):</div>", unsafe_allow_html=True)
-input_area = st.text_area("", height=140, key="input_area")
+input_area = st.text_area("Digite os códigos (um por linha):", height=120)
 
-st.markdown("<br>", unsafe_allow_html=True)
-buscar = st.button("Pesquisar", key="buscar_button")
+buscar = st.button("Pesquisar")
 
 if buscar:
     if not input_area.strip():
@@ -67,21 +57,9 @@ if buscar:
             st.success(f"Foram encontrados {len(resultado)} código(s).")
 
             # ==============================
-            # Exibir resultado com linhas zebradas
+            # Exibir resultado
             # ==============================
-            st.markdown(
-                resultado.style
-                .set_table_styles([
-                    {"selector": "thead", "props": [("background-color", "#4CAF50"), 
-                                                    ("color", "white"),
-                                                    ("font-family", "Calibri")]},
-                    {"selector": "tbody tr:nth-child(even)", "props": [("background-color", "#f2f2f2")]},
-                    {"selector": "tbody tr:nth-child(odd)", "props": [("background-color", "white")]}
-                ])
-                .set_properties(**{"font-family": "Calibri"})
-                .hide_index()
-                .to_html(), unsafe_allow_html=True
-            )
+            st.dataframe(resultado, use_container_width=True)
 
             # ==============================
             # Download Excel
