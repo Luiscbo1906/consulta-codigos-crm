@@ -9,18 +9,16 @@ st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
 
 # --- Cabeçalho com título e logo ---
 logo_path = "logo.png"  # Substitua pelo caminho correto do logo
-col1, col2, col3 = st.columns([1, 3, 1])
+col1, col2 = st.columns([4, 1])
 with col1:
-    pass
-with col2:
     st.markdown(
-        "<h1 style='text-align: center; color: #0a3d62;'>🔍 Consulta de Códigos CRM</h1>",
+        "<h1 style='text-align: left; color: #0a3d62;'>🔍 Consulta de Códigos CRM</h1>",
         unsafe_allow_html=True
     )
-with col3:
+with col2:
     try:
         logo = Image.open(logo_path)
-        st.image(logo, width=150)
+        st.image(logo, width=120)
     except FileNotFoundError:
         pass
 
@@ -55,8 +53,8 @@ codigos_input = st.text_area(
     placeholder="Exemplo:\n12345\n67890"
 )
 
-# --- Botão Buscar ---
-buscar = st.button("🔎 Buscar", use_container_width=True)
+# --- Botão Buscar (tamanho normal) ---
+buscar = st.button("🔎 Buscar")
 
 # --- Função para manter preço com $
 def manter_preco_com_dolar(x):
@@ -100,22 +98,26 @@ if buscar and codigos_input.strip():
         gb.configure_column("Price", header_name="Preço (USD)", width=150)
 
         # Ativar linhas zebradas
-        gb.configure_grid_options(rowStyle={"backgroundColor": "#f9f9f9"}, 
-                                  getRowStyle="""function(params) {
-                                        if (params.node.rowIndex % 2 === 0) {
-                                            return { backgroundColor: '#ffffff' }
-                                        }
-                                        return { backgroundColor: '#f2f6fc' }
-                                    }""")
+        gb.configure_grid_options(
+            rowStyle={"backgroundColor": "#f9f9f9"},
+            getRowStyle="""function(params) {
+                                if (params.node.rowIndex % 2 === 0) {
+                                    return { backgroundColor: '#ffffff' }
+                                }
+                                return { backgroundColor: '#f2f6fc' }
+                            }"""
+        )
 
         gridOptions = gb.build()
+
+        st.markdown(f"### ✅ {len(resultado_pd)} resultados encontrados")
 
         AgGrid(
             resultado_pd,
             gridOptions=gridOptions,
             height=400,
             fit_columns_on_grid_load=True,
-            theme="alpine"  # Temas: "streamlit", "light", "dark", "blue", "fresh", "alpine"
+            theme="alpine"
         )
 
         # --- Downloads lado a lado ---
