@@ -8,30 +8,6 @@ import io
 st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
 
 # ==============================
-# Carregar dados
-# ==============================
-@st.cache_data
-def carregar_dados():
-    return pd.read_excel("dados.xlsx", sheet_name="Planilha1")
-
-df = carregar_dados()
-
-# ==============================
-# Botão de download acima do cabeçalho
-# ==============================
-output_all = io.BytesIO()
-with pd.ExcelWriter(output_all, engine="openpyxl") as writer:
-    df.to_excel(writer, index=False, sheet_name="Todos_Itens")
-output_all.seek(0)
-
-st.download_button(
-    label="📥 Baixar todos os códigos em Excel",
-    data=output_all,
-    file_name="todos_codigos.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-)
-
-# ==============================
 # Cabeçalho com título e logo
 # ==============================
 col1, col2 = st.columns([6, 1])
@@ -39,6 +15,15 @@ with col1:
     st.markdown("<h2 style='font-family: Calibri;'>🔍 Consulta de Códigos CRM</h2>", unsafe_allow_html=True)
 with col2:
     st.image("logo.png", width=200)
+
+# ==============================
+# Carregar dados
+# ==============================
+@st.cache_data
+def carregar_dados():
+    return pd.read_excel("dados.xlsx", sheet_name="Planilha1")
+
+df = carregar_dados()
 
 # ==============================
 # Caixa de busca
@@ -68,10 +53,7 @@ if buscar:
             # Mensagem de quantos códigos encontrados
             st.success(f"Foram encontrados {len(resultado)} código(s).")
 
-            # Exibir resultado
-            st.dataframe(resultado, height=400, use_container_width=True)
-
-            # Download do resultado filtrado
+            # Botão de download do resultado (logo abaixo da mensagem)
             output = io.BytesIO()
             with pd.ExcelWriter(output, engine="openpyxl") as writer:
                 resultado.to_excel(writer, index=False, sheet_name="Resultados")
@@ -83,3 +65,6 @@ if buscar:
                 file_name="resultado_codigos.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
+
+            # Exibir resultado
+            st.dataframe(resultado, height=400, use_container_width=True)
