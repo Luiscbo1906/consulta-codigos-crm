@@ -1,9 +1,4 @@
 streamlit
-polars
-streamlit-aggrid
 pandas
+polars
 openpyxl
-fastexcel
-Pillow
-st-aggrid
-xlsxwriter
