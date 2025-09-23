@@ -26,6 +26,9 @@ def carregar_dados():
 
 df = carregar_dados()
 
+# 👀 Mostra nomes reais das colunas
+st.write("Colunas encontradas no Excel:", df.columns)
+
 # ==============================
 # Caixa de busca + botão
 # ==============================
@@ -40,17 +43,20 @@ with col2:
 # Lógica de pesquisa
 # ==============================
 if buscar and input_area.strip():
-    # Lista de códigos digitados
     codigos_digitados = [c.strip() for c in input_area.splitlines() if c.strip()]
 
-    # Filtrar no Polars
-    resultado = df.filter(pl.col("Product ID").is_in(codigos_digitados))
+    # ⚠️ Ajuste aqui os nomes das colunas conforme mostrado em df.columns
+    col_id = "Product ID"
+    col_desc = "Description"
+    col_price = "Price"
+
+    resultado = df.filter(pl.col(col_id).is_in(codigos_digitados))
 
     if resultado.is_empty():
         st.warning("Nenhum código encontrado.")
     else:
-        # Somente colunas desejadas
-        resultado = resultado.select(["Product ID", "Description", "Price"])
+        # Apenas as colunas desejadas
+        resultado = resultado.select([col_id, col_desc, col_price])
 
         # ==============================
         # Configuração AgGrid
@@ -76,5 +82,5 @@ if buscar and input_area.strip():
             update_mode=GridUpdateMode.NO_UPDATE,
             fit_columns_on_grid_load=True,
             height=400,
-            theme="balham",  # compacta e clara
+            theme="balham",
         )
