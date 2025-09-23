@@ -32,43 +32,46 @@ input_area = st.text_area("Digite os códigos (um por linha):", height=120)
 
 buscar = st.button("Pesquisar")
 
-if buscar and input_area.strip():
-    codigos_digitados = [c.strip() for c in input_area.splitlines() if c.strip()]
-    resultado = df[df["Product ID"].isin(codigos_digitados)].copy()
-
-    if resultado.empty:
-        st.warning("Nenhum código encontrado.")
+if buscar:
+    if not input_area.strip():
+        st.warning("Por favor, informe pelo menos 1 código para pesquisar.")
     else:
-        # Selecionar apenas as 3 colunas desejadas
-        resultado = resultado[["Product ID", "Product Description", "Price"]]
+        codigos_digitados = [c.strip() for c in input_area.splitlines() if c.strip()]
+        resultado = df[df["Product ID"].isin(codigos_digitados)].copy()
 
-        # Product Description em maiúsculo
-        resultado["Product Description"] = resultado["Product Description"].str.upper()
+        if resultado.empty:
+            st.warning("Nenhum código encontrado.")
+        else:
+            # Selecionar apenas as 3 colunas desejadas
+            resultado = resultado[["Product ID", "Product Description", "Price"]]
 
-        # Preço com símbolo do dólar
-        resultado["Price"] = "$" + resultado["Price"].astype(str)
+            # Product Description em maiúsculo
+            resultado["Product Description"] = resultado["Product Description"].str.upper()
 
-        # ==============================
-        # Mensagem de quantos códigos encontrados
-        # ==============================
-        st.success(f"Foram encontrados {len(resultado)} código(s).")
+            # Preço com símbolo do dólar
+            resultado["Price"] = "$" + resultado["Price"].astype(str)
 
-        # ==============================
-        # Exibir resultado
-        # ==============================
-        st.dataframe(resultado, use_container_width=True)
+            # ==============================
+            # Mensagem de quantos códigos encontrados
+            # ==============================
+            st.success(f"Foram encontrados {len(resultado)} código(s).")
 
-        # ==============================
-        # Download Excel
-        # ==============================
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine="openpyxl") as writer:
-            resultado.to_excel(writer, index=False, sheet_name="Resultados")
-        output.seek(0)
+            # ==============================
+            # Exibir resultado
+            # ==============================
+            st.dataframe(resultado, use_container_width=True)
 
-        st.download_button(
-            label="📥 Baixar resultado em Excel",
-            data=output,
-            file_name="resultado_codigos.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
+            # ==============================
+            # Download Excel
+            # ==============================
+            output = io.BytesIO()
+            with pd.ExcelWriter(output, engine="openpyxl") as writer:
+                resultado.to_excel(writer, index=False, sheet_name="Resultados")
+            output.seek(0)
+
+            st.download_button(
+                label="📥 Baixar resultado em Excel",
+                data=output,
+                file_name="resultado_codigos.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
