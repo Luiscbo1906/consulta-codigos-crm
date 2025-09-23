@@ -56,31 +56,30 @@ if buscar:
             st.success(f"Foram encontrados {len(resultado)} código(s).")
 
             # ==============================
-            # Exibir resultado com linhas zebradas e scroll
+            # Exibir resultado com linhas zebradas, cabeçalho fixo e scroll
             # ==============================
-            def render_table_scroll(df, max_rows=20):
-                # calcular altura aproximada para 20 linhas
-                row_height = 40  # px
+            def render_table_scroll_fixed_header(df, max_rows=20):
+                row_height = 40  # px por linha
                 table_height = min(len(df), max_rows) * row_height
-                html = f"<div style='overflow-y: auto; height: {table_height}px;'>"
-                html += "<table style='border-collapse: collapse; font-family: Calibri; width: 100%;'>"
-                # Cabeçalho
-                html += "<thead><tr style='background-color: #4CAF50; color: white;'>"
+                html = f"""
+                <div style='overflow-y: auto; max-height: {table_height}px; border: 1px solid #ccc;'>
+                    <table style='border-collapse: collapse; font-family: Calibri; width: 100%;'>
+                        <thead style='position: sticky; top: 0; background-color: #4CAF50; color: white; z-index: 1;'>
+                            <tr>"""
                 for col in df.columns:
-                    html += f"<th style='padding: 8px; text-align: left;'>{col}</th>"
-                html += "</tr></thead>"
-                # Corpo
-                html += "<tbody>"
+                    html += f"<th style='padding: 8px; text-align: left; border-bottom: 1px solid #ccc;'>{col}</th>"
+                html += "</tr></thead><tbody>"
+                
                 for i, row in df.iterrows():
-                    bg = "#f2f2f2" if i % 2 == 0 else "white"
+                    bg = "#f9f9f9" if i % 2 == 0 else "#ffffff"
                     html += f"<tr style='background-color: {bg};'>"
                     for val in row:
-                        html += f"<td style='padding: 8px;'>{val}</td>"
+                        html += f"<td style='padding: 8px; border-bottom: 1px solid #eee;'>{val}</td>"
                     html += "</tr>"
                 html += "</tbody></table></div>"
                 return html
 
-            st.markdown(render_table_scroll(resultado), unsafe_allow_html=True)
+            st.markdown(render_table_scroll_fixed_header(resultado), unsafe_allow_html=True)
 
             # ==============================
             # Download Excel
