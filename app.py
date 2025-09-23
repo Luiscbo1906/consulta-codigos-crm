@@ -5,7 +5,7 @@ import io
 # ==============================
 # Configuração da página
 # ==============================
-st.set_page_config(page_title="Consulta de Códigos CRM", layout="wide")
+st.set_page_config(page_title="Consulta de preço [USD] CRM", layout="wide")
 
 # ==============================
 # Cabeçalho com título e logo
@@ -68,3 +68,4 @@ if buscar:
 
             # Exibir resultado
             st.dataframe(resultado, height=400, use_container_width=True)
+
